@@ -1,0 +1,58 @@
+~[tlist_sql;
+  SELECT
+  COALESCE(JSON_ARRAYAGG(JSON_OBJECT(*)
+		RETURNING
+			CLOB), TO_CLOB(CHR(91) || CHR(93))) json_obj
+  FROM(
+    SELECT
+		sections.id,
+	    sections.course_number,
+	    courses.course_name,
+	    sections.section_number,
+	    sections.EXTERNAL_EXPRESSION,
+	    terms.ABBREVIATION term,
+	    CASE WHEN sysdate BETWEEN terms.FIRSTDAY
+				AND terms.LASTDAY THEN
+				1
+			ELSE
+				0
+			END Active,
+	    sections.COURSE_NUMBER || '-' || sections.section_number section_name,
+	    COALESCE(teachers.EMAIL_ADDR, 'powerschool@tesd.net') teacher_email,
+	    JSON_ARRAYAGG(emailaddress.emailaddress ORDER BY emailaddress.emailaddress) email_list
+	FROM sections
+    	INNER JOIN courses ON courses.course_number = sections.course_number
+		INNER JOIN TESD_CURRENT_YEAR ON 1 = 1
+		INNER JOIN sectionteacher ON sectionteacher.sectionid = sections.id
+			AND sectionteacher.teacherid = ~[x:userid]
+		INNER JOIN teachers ON teachers.ID = sectionTeacher.TEACHERID
+		INNER JOIN terms ON terms.id = sections.termid
+			AND terms.SCHOOLID = sections.SCHOOLID
+		LEFT JOIN cc ON cc.sectionid = sections.id
+			AND TO_CHAR(cc.dateleft, 'YYYYMMDD') >= TO_CHAR(sysdate, 'YYYYMMDD')
+		LEFT JOIN students ON students.id = cc.studentid
+			AND students.schoolid = sections.schoolid
+			AND students.enroll_status = 0
+		LEFT JOIN studentcontactassoc ON studentcontactassoc.studentdcid = students.dcid
+		LEFT JOIN person ON person.id = studentcontactassoc.personid
+		LEFT JOIN STUDENTCONTACTDETAIL ON STUDENTCONTACTDETAIL.STUDENTCONTACTASSOCID = studentcontactassoc.STUDENTCONTACTASSOCID
+			AND STUDENTCONTACTDETAIL.ISCUSTODIAL = 1
+			AND(TO_CHAR(STUDENTCONTACTDETAIL.startdate, 'YYYYMMDD') IS NULL
+				OR TO_CHAR(STUDENTCONTACTDETAIL.startDate, 'YYYYMMDD') <= TO_CHAR(sysdate, 'YYYYMMDD'))
+			AND(TO_CHAR(STUDENTCONTACTDETAIL.enddate, 'YYYYMMDD') IS NULL
+				OR TO_CHAR(STUDENTCONTACTDETAIL.enddate, 'YYYYMMDD') > TO_CHAR(sysdate, 'YYYYMMDD'))
+		LEFT JOIN personemailaddressassoc ON personemailaddressassoc.personid = person.id
+		LEFT JOIN emailaddress ON emailaddress.emailaddressid = personemailaddressassoc.emailaddressid
+	WHERE sections.schoolid = ~(curschoolid)
+	GROUP BY
+		sections.id,
+	    sections.COURSE_NUMBER,
+	    courses.course_name,
+	    sections.section_number,
+	    sections.EXTERNAL_EXPRESSION,
+	    terms.ABBREVIATION,
+	    terms.FIRSTDAY,
+	    terms.LASTDAY,
+	    teachers.EMAIL_ADDR
+
+  ) foo]~(json_obj)[/tlist_sql]

@@ -1,0 +1,122 @@
+[
+    {
+        "ID": 37423,
+        "COURSE_NUMBER": "BVA",
+        "COURSE_NAME": "Brandywine Virtual Academy",
+        "SECTION_NUMBER": "1",
+        "EXTERNAL_EXPRESSION": "HR(1-6)",
+        "TERM": "21-22",
+        "ACTIVE": 0,
+        "SECTION_NAME": "BVA-1",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 40033,
+        "COURSE_NUMBER": "HR",
+        "COURSE_NAME": "Homeroom",
+        "SECTION_NUMBER": "112",
+        "EXTERNAL_EXPRESSION": "HR(1-6)",
+        "TERM": "22-23",
+        "ACTIVE": 0,
+        "SECTION_NAME": "HR-112",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 40034,
+        "COURSE_NUMBER": "3SS",
+        "COURSE_NAME": "Social Studies Grade 3",
+        "SECTION_NUMBER": "112",
+        "EXTERNAL_EXPRESSION": "SS(1-6)",
+        "TERM": "22-23",
+        "ACTIVE": 0,
+        "SECTION_NAME": "3SS-112",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 40035,
+        "COURSE_NUMBER": "3SC",
+        "COURSE_NAME": "Science Grade 3",
+        "SECTION_NUMBER": "112",
+        "EXTERNAL_EXPRESSION": "SC(1-6)",
+        "TERM": "22-23",
+        "ACTIVE": 0,
+        "SECTION_NAME": "3SC-112",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 40036,
+        "COURSE_NUMBER": "3LA",
+        "COURSE_NAME": "Language Arts Grade 3",
+        "SECTION_NUMBER": "112",
+        "EXTERNAL_EXPRESSION": "LA(1-6)",
+        "TERM": "22-23",
+        "ACTIVE": 0,
+        "SECTION_NAME": "3LA-112",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 40378,
+        "COURSE_NUMBER": "BVA",
+        "COURSE_NAME": "Brandywine Virtual Academy",
+        "SECTION_NUMBER": "1",
+        "EXTERNAL_EXPRESSION": "HR(1-6)",
+        "TERM": "22-23",
+        "ACTIVE": 0,
+        "SECTION_NAME": "BVA-1",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 47815,
+        "COURSE_NUMBER": "HR",
+        "COURSE_NAME": "Homeroom",
+        "SECTION_NUMBER": "112",
+        "EXTERNAL_EXPRESSION": "HR(1-6)",
+        "TERM": "23-24",
+        "ACTIVE": 1,
+        "SECTION_NAME": "HR-112",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 47816,
+        "COURSE_NUMBER": "3SS",
+        "COURSE_NAME": "Social Studies Grade 3",
+        "SECTION_NUMBER": "112",
+        "EXTERNAL_EXPRESSION": "SS(1-6)",
+        "TERM": "23-24",
+        "ACTIVE": 1,
+        "SECTION_NAME": "3SS-112",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 47817,
+        "COURSE_NUMBER": "3SC",
+        "COURSE_NAME": "Science Grade 3",
+        "SECTION_NUMBER": "112",
+        "EXTERNAL_EXPRESSION": "SC(1-6)",
+        "TERM": "23-24",
+        "ACTIVE": 1,
+        "SECTION_NAME": "3SC-112",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    },
+    {
+        "ID": 48113,
+        "COURSE_NUMBER": "BVA",
+        "COURSE_NAME": "Brandywine Virtual Academy",
+        "SECTION_NUMBER": "1",
+        "EXTERNAL_EXPRESSION": "HR(1-6)",
+        "TERM": "23-24",
+        "ACTIVE": 1,
+        "SECTION_NAME": "BVA-1",
+        "TEACHER_EMAIL": "testere@tesd.net",
+        "EMAIL_LIST": []
+    }
+]

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<plugin xmlns="http://plugin.powerschool.pearson.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" description="Svelte components for PowerSchool SIS." name="TE Tech - Svelte" version="23.11.12" xsi:schemaLocation="http://plugin.powerschool.pearson.com plugin.xsd">
+  <publisher name="Benjamin Kemp">
+    <contact email="kempb@tesd.net"/>
+  </publisher>
+  <oauth/>
+  <access_request>
+    <field table="STUDENTS" field="DCID" access="ViewOnly"/>
+    <field table="STUDENTS" field="ID" access="ViewOnly"/>
+    <field table="STUDENTS" field="LAST_NAME" access="ViewOnly"/>
+    <field table="STUDENTS" field="FIRST_NAME" access="ViewOnly"/>
+    <field table="STUDENTS" field="enroll_status" access="ViewOnly"/>
+    <field table="STUDENTS" field="schoolid" access="ViewOnly"/>
+    <field table="STUDENTS" field="student_number" access="ViewOnly"/>
+    <field table="STUDENTS" field="entrydate" access="ViewOnly"/>
+    <field table="students" field="exitdate" access="ViewOnly"/>
+    <field table="students" field="gender" access="FullAccess"/>
+    <field table="students" field="dob" access="FullAccess"/>
+    <field table="students" field="street" access="FullAccess"/>
+    <field table="students" field="city" access="FullAccess"/>
+    <field table="students" field="zip" access="FullAccess"/>
+    <field table="students" field="middle_name" access="FullAccess"/>
+    <field table="students" field="lastfirst" access="FullAccess"/>
+    <field table="students" field="grade_level" access="FullAccess"/>
+    <field table="U_DEF_EXT_STUDENTS" field="studentsdcid" access="FullAccess"/>
+    <field table="U_DEF_EXT_STUDENTS" field="nickname" access="FullAccess"/>
+    <field table="personaddressassoc" field="personid" access="FullAccess"/>
+    <field table="personphonenumberassoc" field="personid" access="FullAccess"/>
+    <field table="personphonenumberassoc" field="phonenumberpriorityorder" access="FullAccess"/>
+    <field table="personphonenumberassoc" field="phonenumberid" access="FullAccess"/>
+    <field table="phonenumber" field="phonenumber" access="FullAccess"/>
+    <field table="phonenumber" field="phonenumberid" access="FullAccess"/>
+    <field table="studentcontactassoc" field="personid" access="FullAccess"/>
+    <field table="studentcontactassoc" field="studentdcid" access="FullAccess"/>
+    <field table="studentcontactassoc" field="studentcontactassocid" access="FullAccess"/>
+    <field table="studentcontactdetail" field="studentcontactassocid" access="FullAccess"/>
+    <field table="studentcontactdetail" field="iscustodial" access="FullAccess"/>
+    <field table="personaddress" field="street" access="FullAccess"/>
+    <field table="personaddress" field="city" access="FullAccess"/>
+    <field table="personaddress" field="personaddressid" access="FullAccess"/>
+    <field table="personaddressassoc" field="personaddressid" access="FullAccess"/>
+    <field table="personaddressassoc" field="personaddressassocid" access="FullAccess"/>
+    <field table="personemailaddressassoc" field="isprimaryemailaddress" access="FullAccess"/>
+    <field table="personemailaddressassoc" field="emailaddressid" access="FullAccess"/>
+    <field table="personemailaddressassoc" field="personid" access="FullAccess"/>
+    <field table="emailaddress" field="emailaddress" access="FullAccess"/>
+    <field table="emailaddress" field="emailaddressid" access="FullAccess"/>
+    <field table="person" field="id" access="FullAccess"/>
+    <field table="person" field="firstname" access="FullAccess"/>
+    <field table="person" field="middlename" access="FullAccess"/>
+    <field table="person" field="lastname" access="FullAccess"/>
+    <field table="schools" field="school_number" access="FullAccess"/>
+    <field table="schools" field="abbreviation" access="FullAccess"/>
+  </access_request>
+</plugin>
