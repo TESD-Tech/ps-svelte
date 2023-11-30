@@ -4,7 +4,7 @@
  * @param {string} selector - The CSS selector for the target element.
  */
 
-export const removeAngularAttributes = (selector) => {
+const removeAngularAttributes = (selector) => {
   // Find the target element using the provided selector
   const element = document.querySelector(selector);
 
@@ -51,3 +51,4 @@ export const removeAngularAttributes = (selector) => {
 
 // Example usage:
 // removeAngularAttributes("#addEditOfficeVisit");
+
