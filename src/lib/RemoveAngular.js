@@ -16,7 +16,7 @@ const removeAngularAttributes = (selector) => {
    * @param {Attr} attr - The attribute to check.
    * @returns {boolean} True if the attribute is an Angular attribute, false otherwise.
    */
-  const isAngularAttribute = (attr) => /^data-ng-|^ng-|^x-ng-/.test(attr.name);
+  const isAngularAttribute = (attr) => /^data-ng-|^data-|^ng-|^x-ng-/.test(attr.name);
 
   /**
    * Helper function to remove Angular attributes from a given element.
