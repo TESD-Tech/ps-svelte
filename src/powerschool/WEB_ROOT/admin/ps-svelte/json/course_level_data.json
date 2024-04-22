@@ -114,7 +114,8 @@ WITH filtered_students AS (
 			
 		)
 	WHERE SUBSTR(cc.termid, 0, 2 ) = ~(curyearid)
-		AND cc.dateleft - cc.DATEENROLLED >= 5 -- Must be enrolled at least 5 days to be counted
+		-- AND cc.dateleft - cc.DATEENROLLED >= 5 -- Must be enrolled at least 5 days to be counted
+		AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
 	
 		
 	GROUP BY cc.COURSE_NUMBER
@@ -202,7 +203,7 @@ SELECT JSON_ARRAYAGG(
 				, sort_order
 				, display_name
 			RETURNING CLOB
-		) json_obj
+		) form_object
 	FROM (
 
 SELECT *

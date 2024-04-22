@@ -5,12 +5,19 @@
 
   let data = [];
 
+  let asOfDate = new Date().toISOString().split('T')[0];
+
   // Determine the environment (production or development)
   const isProduction = !import.meta.env.DEV;
 
-  onMount(async () => {
+  async function updateData(asOfDate) {
+    let queryString = '';
+
+    if (asOfDate)
+      queryString = `?asOfDate=${asOfDate}`;
+
     if (isProduction) {
-      const response = await fetch('/admin/ps-svelte/json/course_level_data.json');
+      const response = await fetch(`/admin/ps-svelte/json/course_level_data.json${queryString}`);
       data = await response.json();
     } else {
       // Use development sections data
@@ -18,10 +25,18 @@
     }
 
     console.log(data)
+  }
 
+  onMount(async () => {
+    updateData()
   });
 
   $: schools = [...new Set(data.map(d => d.SCHOOL))];
+  $: {
+  (async () => {
+    await updateData(asOfDate);
+  })();
+}
 </script>
 
 <style>
@@ -50,6 +65,10 @@
 
 <div id="report" class="">
   <h2>Distrtictwide Course Level Data</h2>
+  <div class="pb-4">
+    <label for="asOfDate">As of: </label>
+    <input type="date" bind:value={asOfDate} id="asOfDate">
+  </div>
   <div id="tables" class="grid grid-flow-col gap-6 border-collapse grid-cols-1 grid-rows-5">
 
     {#each schools as school}
