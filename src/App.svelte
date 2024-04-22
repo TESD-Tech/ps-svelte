@@ -3,6 +3,7 @@
   import viteLogo from '/vite.svg'
   import Counter from './lib/Counter.svelte'
   import TeacherPortalSectionFilter from './components/TeacherPortalSectionFilter.svelte'
+  import CourseLevelData from 
 </script>
 
 <main>
