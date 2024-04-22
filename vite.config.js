@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-import UnoCSS from 'unocss/vite'
+import UnoCSS from '@unocss/svelte-scoped/vite'
 import fs from 'fs';
 import path from 'path';
 
@@ -33,6 +33,7 @@ export default defineConfig({
     outDir: 'dist/WEB_ROOT/admin/ps-svelte/',
     assetsDir: '/assets',
     emptyOutDir: true,
+    cssCodeSplit: false,
     minify: true,
     rollupOptions: {
       input: components,

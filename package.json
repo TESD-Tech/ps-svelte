@@ -1,7 +1,7 @@
 {
   "name": "ps-svelte",
   "private": true,
-  "version": "24.4.7",
+  "version": "24.4.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,7 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
     "@tesd-tech/ps-package": "^24.3.0",
+    "@unocss/svelte-scoped": "^0.59.4",
     "svelte": "^4.2.15",
     "unocss": "^0.59.4",
     "vite": "^5.2.10"

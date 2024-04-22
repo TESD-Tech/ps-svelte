@@ -19,6 +19,9 @@ devDependencies:
   '@tesd-tech/ps-package':
     specifier: ^24.3.0
     version: 24.3.0
+  '@unocss/svelte-scoped':
+    specifier: ^0.59.4
+    version: 0.59.4
   svelte:
     specifier: ^4.2.15
     version: 4.2.15
@@ -1051,6 +1054,15 @@ packages:
     resolution: {integrity: sha512-wBQJ39kw4Tfj4km7AoGvSIobPKVnRZVsgc0bema5Y0PL3g1NeVQ/LopBI2zEJWdpxGXUWxSDsXm7BZo6qVlD/A==}
     dev: true
 
+  /@unocss/svelte-scoped@0.59.4:
+    resolution: {integrity: sha512-PINKIfp9LWWutierHvgLK4TlfTJlRPlYwbIcKVCIZEXvhB/kYhGwc9F4M5V3XlGiOcyiDVXS/CR62adnMgRyoQ==}
+    dependencies:
+      '@unocss/config': 0.59.4
+      '@unocss/reset': 0.59.4
+      css-tree: 2.3.1
+      magic-string: 0.30.10
+    dev: true
+
   /@unocss/transformer-attributify-jsx-babel@0.59.4:
     resolution: {integrity: sha512-xtCRSgeTaDBiNJLVX7oOSFe63JiFB5nrdK23PHn3IlZM9O7Bxx4ZxI3MQJtFZFQNE+INFko+DVyY1WiFEm1p/Q==}
     dependencies:
@@ -1403,7 +1415,7 @@ packages:
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
     dependencies:
       mdn-data: 2.0.30
-      source-map-js: 1.0.2
+      source-map-js: 1.2.0
     dev: true
 
   /debug@4.3.4:
@@ -2137,11 +2149,6 @@ packages:
       '@polka/url': 1.0.0-next.25
       mrmime: 2.0.0
       totalist: 3.0.1
-    dev: true
-
-  /source-map-js@1.0.2:
-    resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
-    engines: {node: '>=0.10.0'}
     dev: true
 
   /source-map-js@1.2.0:
