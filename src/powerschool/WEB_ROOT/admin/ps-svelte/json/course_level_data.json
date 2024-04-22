@@ -113,7 +113,7 @@ WITH filtered_students AS (
 			)
 			
 		)
-	WHERE SUBSTR(cc.termid, 0, 2 ) = 33 -- ~(curyearid)
+	WHERE SUBSTR(cc.termid, 0, 2 ) = ~(curyearid)
 		AND cc.dateleft - cc.DATEENROLLED >= 5 -- Must be enrolled at least 5 days to be counted
 	
 		
@@ -202,7 +202,7 @@ SELECT JSON_ARRAYAGG(
 				, sort_order
 				, display_name
 			RETURNING CLOB
-		) form_object
+		) json_obj
 	FROM (
 
 SELECT *
@@ -215,4 +215,4 @@ ORDER BY SUBSTR(sort_order, 0, 4)
 	, display_name
 	
 	
-) foo]
+) foo]~(json_obj)[/tlist_sql]

@@ -30,7 +30,7 @@ export default defineConfig({
   ],
   build: {
     target: 'esnext',
-    outDir: 'dist/WEB_ROOT/ps-svelte/',
+    outDir: 'dist/WEB_ROOT/admin/ps-svelte/',
     assetsDir: '/assets',
     emptyOutDir: true,
     minify: true,

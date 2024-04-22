@@ -10,7 +10,7 @@
 
   onMount(async () => {
     if (isProduction) {
-      const response = await fetch('/admin/ps-svelte/json/json_course_level_data.json');
+      const response = await fetch('/admin/ps-svelte/json/course_level_data.json');
       data = await response.json();
     } else {
       // Use development sections data
@@ -54,7 +54,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th class="bg-slate-400">&nbsp;</th>
+          <th class="bg-slate-400 w-30">&nbsp;</th>
           <th class="bg-slate-400">Course Name</th>
           <th class="bg-slate-400">Enrollments</th>
           <th class="bg-slate-400">Actual_A</th>
