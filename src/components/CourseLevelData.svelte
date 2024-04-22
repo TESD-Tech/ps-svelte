@@ -1,9 +1,12 @@
 <svelte:options customElement="ps-svelte-course-level-data" />
 <script>
   import { onMount } from 'svelte';
-  import devData  from '../assets/course_data.json'
+  import dev_student from '../data/course_level_data_student.json';
+  import dev_roster from '../data/course_level_data_roster.json';
 
   let data = [];
+  let grade_level_lookup = {}
+  let courses = {};
 
   let asOfDate = new Date().toISOString().split('T')[0];
 
@@ -12,19 +15,151 @@
 
   async function updateData(asOfDate) {
     let queryString = '';
+    let rosters;
+    let students;
 
     if (asOfDate)
       queryString = `?asOfDate=${asOfDate}`;
 
     if (isProduction) {
       const response = await fetch(`/admin/ps-svelte/json/course_level_data.json${queryString}`);
-      data = await response.json();
+      rosters = await response.json();
     } else {
       // Use development sections data
-      data = devData
+      rosters = dev_roster;
+      students = dev_student;
     }
 
+    // Populate grade_level_lookup using the students data and DISPLAY_GRADE
+    students.forEach(student => {
+      if (student.DISPLAY_GRADE === 'Grade 13')
+        return
+
+      if (student.ETHNICITY === 'I')
+        return
+
+      if (!grade_level_lookup[student.DISPLAY_GRADE]) {
+        grade_level_lookup[student.DISPLAY_GRADE] = {
+          SCHOOL: student.SCHOOL,
+          A: 0,
+          B: 0,
+          H: 0,
+          M: 0,
+          W: 0,
+          TOTAL_STUDENTS: 0,
+          DISPLAY_GRADE: student.DISPLAY_GRADE
+        }
+      }
+
+      grade_level_lookup[student.DISPLAY_GRADE].TOTAL_STUDENTS += 1;
+      grade_level_lookup[student.DISPLAY_GRADE][student.ETHNICITY] += 1;
+
+    })
+
+
+    console.log(grade_level_lookup)
+
+    // Populate the data array with the rosters data
+    rosters.forEach(r => {
+      if (!courses[r.DISPLAY_NAME]) {
+        courses[r.DISPLAY_NAME] = {
+          SCHOOL: r.SCHOOL,
+          DISPLAY_NAME: r.DISPLAY_NAME,
+          A: 0,
+          B: 0,
+          H: 0,
+          M: 0,
+          W: 0,
+          TOTAL_STUDENTS: 0,
+          SORT_ORDER: r.SORT_ORDER,
+          DISPLAY_GRADE: r.DISPLAY_GRADE
+        }
+      } 
+
+      courses[r.DISPLAY_NAME].TOTAL_STUDENTS += 1;
+      courses[r.DISPLAY_NAME][r.ETHNICITY] += 1;
+    })
+
+    // Sort the data array by school and then by SORT_ORDER
+    courses = Object.values(courses).sort((a, b) => {
+      if (a.SORT_ORDER.slice(0,4) < b.SORT_ORDER.slice(0,4)) return -1;
+      if (a.SORT_ORDER.slice(0,4) > b.SORT_ORDER.slice(0,4)) return 1;
+      if (a.SORT_ORDER < b.SORT_ORDER) return -1;
+      if (a.SORT_ORDER > b.SORT_ORDER) return 1;
+      return 0;
+    })
+
+    console.log(courses)
+
+
+    let groupedData = rosters.reduce((acc, item) => {
+      let key = `${item.DISPLAY_NAME}-${item.DISPLAY_GRADE}`;
+      if (!acc[key]) {
+          acc[key] = {
+              DISPLAY_NAME: item.DISPLAY_NAME,
+              DISPLAY_GRADE: item.DISPLAY_GRADE,
+              SCHOOL: item.SCHOOL,
+              SORT_ORDER: item.SORT_ORDER,
+              A: 0,
+              B: 0,
+              H: 0,
+              M: 0,
+              W: 0,
+              TOTAL_STUDENTS: 0
+          };
+        }
+        if (!acc[key][item.ETHNICITY]) {
+          acc[key][item.ETHNICITY] = 1;
+        } else {
+          acc[key][item.ETHNICITY]++;
+        }
+        return acc;
+      }, {});
+
+      for (let key in groupedData) {
+        let total = 0;
+        for (let ethnicity in groupedData[key]) {
+          total += groupedData[key][ethnicity];
+        }
+        groupedData[key].TOTAL_STUDENTS = total;
+    } 
+
+    // Iterate groupedData and push the values to the data array
+    let this_data = []
+    for (let key in groupedData) {
+      let item = groupedData[key];
+      this_data.push({
+        SCHOOL: item.SCHOOL,
+        SORT_ORDER: item.SORT_ORDER,
+        DISPLAY_NAME: item.DISPLAY_NAME,
+        TOTAL_STUDENTS: item.TOTAL_STUDENTS,
+        A: item.A,
+        A_PERCENTAGE: Math.round(item.A / item.TOTAL_STUDENTS * 100),
+        B: item.B,
+        B_PERCENTAGE: Math.round(item.B / item.TOTAL_STUDENTS * 100),
+        H: item.H,
+        H_PERCENTAGE: Math.round(item.H / item.TOTAL_STUDENTS * 100),
+        M: item.M,
+        M_PERCENTAGE: Math.round(item.M / item.TOTAL_STUDENTS * 100),
+        W: item.W,
+        W_PERCENTAGE: Math.round(item.W / item.TOTAL_STUDENTS * 100)
+      });
+    }
+
+    // Sort the data array by school and then by DISPLAY_NAME
+    this_data = this_data.sort((a, b) => {
+      if (a.SORT_ORDER.split(0,4) < b.SORT_ORDER.split(0,4)) return -1;
+      if (a.SORT_ORDER.split(0,4) > b.SORT_ORDER.split(0,4)) return 1;
+      if (a.DISPLAY_NAME < b.DISPLAY_NAME) return -1;
+      if (a.DISPLAY_NAME > b.DISPLAY_NAME) return 1;
+      return 0;
+    });
+
+
+    data = this_data
+
     console.log(data)
+
   }
 
   onMount(async () => {
@@ -101,7 +236,7 @@
               <td class="text-center">{course.DISPLAY_NAME}</td>
               <td class="text-center">{course.TOTAL_STUDENTS}</td>
               <td class="text-center">{course.A}</td>
-              <td class="text-center">{course.A_PERCENTAGE}%</td>
+              <td class="text-center">{course.TOTAL_STUDENTS}%</td>
               <td class="text-center">{course.B}</td>
               <td class="text-center">{course.B_PERCENTAGE}%</td>
               <td class="text-center">{course.H}</td>
@@ -113,11 +248,11 @@
               {:else}
               <td class="bg-slate-400">&nbsp;</td>
               <td class="text-center bg-slate-400">{course.DISPLAY_GRADE}</td> 
-              <td class="text-center bg-slate-400" colspan=2>A: {course.A_PERCENTAGE}%</td>
-              <td class="text-center bg-slate-400" colspan=2>B: {course.B_PERCENTAGE}%</td>
-              <td class="text-center bg-slate-400" colspan=2>H: {course.H_PERCENTAGE}%</td>
-              <td class="text-center bg-slate-400" colspan=2>M: {course.M_PERCENTAGE}%</td>
-              <td class="text-center bg-slate-400" colspan=2>W: {course.W_PERCENTAGE}%</td>
+              <td class="text-center bg-slate-400" colspan=2>A: {Math.round(course.A / course.TOTAL_STUDENTS * 100)}%</td>
+              <td class="text-center bg-slate-400" colspan=2>B: {Math.round(course.B / course.TOTAL_STUDENTS * 100)}%</td>
+              <td class="text-center bg-slate-400" colspan=2>H: {Math.round(course.H / course.TOTAL_STUDENTS * 100)}%</td>
+              <td class="text-center bg-slate-400" colspan=2>M: {Math.round(course.M / course.TOTAL_STUDENTS * 100)}%</td>
+              <td class="text-center bg-slate-400" colspan=2>W: {Math.round(course.W / course.TOTAL_STUDENTS * 100)}%</td>
               {/if}
             </tr>
           {/each}
