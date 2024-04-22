@@ -1,7 +1,7 @@
 {
   "name": "ps-svelte",
   "private": true,
-  "version": "23.11.12",
+  "version": "24.4.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,9 +12,11 @@
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
     "@tesd-tech/ps-package": "^24.3.0",
     "svelte": "^4.2.15",
+    "unocss": "^0.59.4",
     "vite": "^5.2.10"
   },
   "dependencies": {
+    "@unocss/preset-wind": "^0.59.4",
     "md5": "^2.3.0"
   }
 }

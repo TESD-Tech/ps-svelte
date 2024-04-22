@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import UnoCSS from 'unocss/vite'
 import fs from 'fs';
 import path from 'path';
 
@@ -16,6 +17,9 @@ export default defineConfig({
     }
   },
   plugins: [
+    UnoCSS({
+      "injectReset": "@unocss/reset/normalize.css"
+    }),
     svelte({
       compilerOptions: {
         customElement: true,

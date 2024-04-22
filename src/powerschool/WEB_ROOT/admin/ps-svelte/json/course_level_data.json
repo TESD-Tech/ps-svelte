@@ -1,0 +1,218 @@
+~[tlist_sql;
+WITH filtered_students AS (
+	SELECT student_number
+		, dcid
+		, id
+		, GRADE_LEVEL
+		, students.schoolid
+	FROM students
+	WHERE students.ENROLL_STATUS = 0
+		AND students.SCHOOLID BETWEEN 2000 AND 5000
+		AND students.GRADE_LEVEL > 1
+-- 		AND students.GRADE_LEVEL = 5
+-- 		AND students.schoolid IN (3323, 3327)
+-- 		AND students.SCHOOLID = 2080
+-- 		AND students.STUDENT_NUMBER = 2024170
+
+)
+, race_ethnicity AS (
+	SELECT students.dcid
+		, students.STUDENT_NUMBER
+		, MAX( students.student_number)
+		, CASE WHEN COUNT(students.dcid) > 1 THEN 'M'
+			WHEN MAX(students.fedethnicity) = 1 OR MAX(studentrace.RACECD) = 'H' THEN 'H'
+			ELSE MAX(studentrace.racecd) END DISPLAY_VALUE
+		, MAX(students.ETHNICITY) ETHNICITY
+		
+		, CASE WHEN COUNT(students.dcid) = 1 THEN SUM(CASE WHEN studentrace.racecd = 'B' THEN 1 ELSE 0 END) ELSE 0 END black
+		, CASE WHEN COUNT(students.dcid) = 1 THEN SUM(CASE WHEN studentrace.racecd = 'I' THEN 1 ELSE 0 END) ELSE 0 END native_american
+		, CASE WHEN COUNT(students.dcid) = 1 THEN SUM(CASE WHEN studentrace.racecd = 'A' THEN 1 ELSE 0 END) ELSE 0 END asian
+		, CASE WHEN MAX(students.fedethnicity) = 1 THEN 1 ELSE 0 END hispanic
+		, CASE WHEN COUNT(students.dcid) = 1 THEN SUM(CASE WHEN studentrace.racecd = 'W' THEN 1 ELSE 0 END) ELSE 0 END white
+		, CASE WHEN COUNT(students.dcid) = 1 THEN SUM(CASE WHEN studentrace.racecd = 'P' THEN 1 ELSE 0 END) ELSE 0 END pacific_islander
+		, CASE WHEN COUNT(students.dcid) > 1 OR MAX(studentrace.racecd) = 'M' THEN 1 ELSE 0 END MULTI_RACIAL
+	FROM filtered_students
+		INNER JOIN students ON students.id = filtered_students.id
+		INNER JOIN studentrace ON studentrace.studentid = students.id
+			AND studentrace.racecd NOT IN ('I', 'P')
+	GROUP BY students.dcid	
+		, students.STUDENT_NUMBER
+)
+
+
+, filtered_courses AS (
+	SELECT 
+		cc.COURSE_NUMBER
+		, courses.course_name
+		, CASE WHEN MIN(cc.SCHOOLID) = 2080 THEN
+					CASE WHEN courses.SCHED_DEPARTMENT = 'MA' THEN 'MATH '
+						WHEN courses.SCHED_DEPARTMENT = 'SC' THEN 'SCI '
+						WHEN courses.SCHED_DEPARTMENT = 'SS' THEN 'SS '
+						WHEN courses.SCHED_DEPARTMENT = 'EN' THEN 'ENG '
+						ELSE '' END
+						
+					|| CASE WHEN courses.CREDITTYPE IN ('H*', 'H') THEN 'AP/Honors'
+						WHEN courses.CREDITTYPE = 'OSNU' THEN ''
+						ELSE 'X/Academic' END
+				WHEN MIN(cc.SCHOOLID) > 4000 THEN
+					courses.course_name
+				
+			ELSE
+				CASE WHEN courses.course_name 
+					IN ( 'A Math 5','Pre Alg 5','A Math 6','Algebra 1-6','Pre Alg 6','Algebra 1-7','Geometry 7','Pre Alg 7','Algebra 2-8','Algebra 8','Geometry 8','Math Analysis', 'Algebra 2-7', 'Geometry 6' ) 
+					THEN 'Above '
+				WHEN courses.COURSE_NAME IN ( 'O Math 5','O Math 6','O Math 7','Pre Alg 8', 'Rr Math 5', 'Rr Math 6', 'Rr Math 7' ) 
+					THEN 'On '
+			
+				WHEN courses.course_name IN ('Rr Reading 5','Rr Reading 6', 'Reading 5', 'Reading 6') 
+					THEN 'On/Below '
+			
+			
+				WHEN SUBSTR( courses.course_name, 0, 2 ) LIKE 'O %' AND courses.SCHED_DEPARTMENT != 'RD' THEN 'On '
+				WHEN SUBSTR( courses.course_name, 0, 2 ) LIKE 'O %' AND courses.SCHED_DEPARTMENT = 'RD' THEN 'On/Below '
+				WHEN SUBSTR( courses.course_name, 0, 2 ) LIKE 'A %' THEN 'Above '
+				WHEN courses.course_name LIKE '% 8' THEN 'Above '
+
+				
+				ELSE '' END
+				
+				|| CASE WHEN courses.SCHED_DEPARTMENT = 'MA' THEN 'Math '
+					WHEN courses.SCHED_DEPARTMENT = 'RD' THEN 'Reading '
+					ELSE '' END 
+					
+				|| CASE WHEN courses.course_name = 'Math Analysis' THEN '8' 
+					ELSE SUBSTR(courses.course_name, LENGTH(courses.COURSE_NAME), 1 )
+					END
+			
+			END DISPLAY_NAME
+		, CASE WHEN MAX(cc.SCHOOLID) = 2080 THEN 'Grades 9-12'
+			WHEN courses.COURSE_NAME = 'Math Analysis' THEN 'Grade 8'
+			ELSE 'Grade ' || SUBSTR(courses.course_name, LENGTH(courses.COURSE_NAME), 1 )
+			END DISPLAY_GRADE
+		, courses.SCHED_DEPARTMENT
+		, CASE WHEN MAX(cc.SCHOOLID) > 4000 THEN 'Elementary School'
+			WHEN MAX(cc.schoolid) = 2080 THEN 'High School'
+			ELSE 'Middle School' END School
+		, MIN(cc.SCHOOLID)
+			|| '-' 
+			|| CASE WHEN courses.SCHED_DEPARTMENT = 'MA' THEN 1
+				WHEN courses.SCHED_DEPARTMENT = 'SC' THEN 2
+				WHEN courses.SCHED_DEPARTMENT = 'SS' THEN 3
+				WHEN courses.SCHED_DEPARTMENT = 'EN' THEN 4
+				ELSE 5 END sort_order
+		, filtered_students.student_number
+	FROM cc 
+	 
+		INNER JOIN filtered_students ON filtered_students.id = cc.STUDENTID
+ 		INNER JOIN courses ON courses.COURSE_NUMBER = cc.COURSE_NUMBER
+ 			AND (
+					( courses.SCHED_DEPARTMENT IN ('MA', 'SC', 'EN', 'SS') AND courses.SCHOOLID = 2080 )
+					OR ( courses.schoolid IN ( 3323, 3327 ) AND courses.SCHED_DEPARTMENT IN ( 'MA') )
+					OR ( courses.schoolid IN ( 3323, 3327 ) AND courses.SCHED_DEPARTMENT IN ( 'RD') AND (courses.COURSE_NAME LIKE '% 6' OR courses.course_name LIKE '% 5' ) )	
+					OR ( courses.schoolid = 0 AND ( courses.SCHED_DEPARTMENT IN ( 'MA') )
+			)
+			
+		)
+	WHERE SUBSTR(cc.termid, 0, 2 ) = 33 -- ~(curyearid)
+		AND cc.dateleft - cc.DATEENROLLED >= 5 -- Must be enrolled at least 5 days to be counted
+	
+		
+	GROUP BY cc.COURSE_NUMBER
+		, courses.course_name
+		, courses.SCHED_DEPARTMENT
+		, courses.CREDITTYPE
+		, filtered_students.student_number
+		
+		
+		UNION
+	
+	SELECT 
+		'' COURSE_NUMBER
+		, '' course_name
+		, '' DISPLAY_NAME
+		, CASE WHEN MIN(filtered_students.schoolid) = 2080 THEN 'Grades 9-12' 
+			ELSE 'Grade ' || filtered_students.grade_level END DISPLAY_GRADE
+		, '' SCHED_DEPARTMENT
+		, CASE WHEN MIN(filtered_students.SCHOOLID) > 4000 THEN 'Elementary School'
+			WHEN MIN(filtered_students.SCHOOLID) = 2080 THEN 'High School'
+			ELSE 'Middle School' END School
+		, TO_CHAR( MIN(filtered_students.SCHOOLID) ) || '-'|| 0 sort_order
+		, filtered_students.student_number
+	FROM filtered_students
+	GROUP BY filtered_students.student_number
+		, filtered_students.grade_level
+)
+
+, roster_pre_total AS (
+	SELECT filtered_courses.school
+		, filtered_courses.display_name
+		, MAX( filtered_courses.sort_order) sort_order
+		, MIN(filtered_courses.display_grade) display_grade
+		, filtered_courses.student_number
+		, MAX(filtered_students.grade_level) grade_level
+		, MAX(race_ethnicity.display_value) race_ethnicity
+		, MIN(filtered_courses.SCHED_DEPARTMENT) SCHED_DEPARTMENT
+		
+	FROM filtered_courses
+		INNER JOIN filtered_students ON filtered_students.student_number = filtered_courses.student_number
+		INNER JOIN race_ethnicity ON race_ethnicity.student_number = filtered_courses.student_number
+	
+	GROUP BY filtered_courses.school
+		, filtered_courses.display_name
+		, filtered_courses.student_number
+
+)
+, roster_total AS (
+	SELECT roster_pre_total.school
+		, roster_pre_total.display_name
+		, roster_pre_total.display_grade
+		, COUNT(roster_pre_total.student_number) Total_Students
+		, SUM( CASE WHEN race_ethnicity.ethnicity = 'A' THEN 1 ELSE 0 END ) A
+		, ROUND(SUM( CASE WHEN race_ethnicity.ethnicity = 'A' THEN 1 ELSE 0 END )
+			/ COUNT(roster_pre_total.student_number), 2 ) * 100 A_Percentage
+		, SUM( CASE WHEN race_ethnicity.ethnicity = 'B' THEN 1 ELSE 0 END ) B
+		, ROUND(SUM( CASE WHEN race_ethnicity.ethnicity = 'B' THEN 1 ELSE 0 END )
+			/ COUNT(roster_pre_total.student_number), 2 ) * 100 B_Percentage
+		, SUM( CASE WHEN race_ethnicity.ethnicity = 'H' OR race_ethnicity.hispanic = 1 THEN 1 ELSE 0 END ) H
+		, ROUND(SUM( CASE WHEN race_ethnicity.ethnicity = 'H' THEN 1 ELSE 0 END )
+			/ COUNT(roster_pre_total.student_number), 2 ) * 100 H_Percentage
+		, SUM( CASE WHEN race_ethnicity.ethnicity = 'M' THEN 1 ELSE 0 END ) M
+		, ROUND(SUM( CASE WHEN race_ethnicity.ethnicity = 'M' THEN 1 ELSE 0 END )
+			/ COUNT(roster_pre_total.student_number), 2 ) * 100 M_Percentage
+		, SUM( CASE WHEN race_ethnicity.ethnicity = 'W' THEN 1 ELSE 0 END) W
+		, ROUND(SUM( CASE WHEN race_ethnicity.ethnicity = 'W' THEN 1 ELSE 0 END )
+			/ COUNT(roster_pre_total.student_number), 2 ) * 100 W_Percentage
+		
+		
+		, MIN( roster_pre_total.sort_order) Sort_order
+
+	FROM roster_pre_total
+		INNER JOIN race_ethnicity ON race_ethnicity.student_number = roster_pre_total.student_number
+	GROUP BY roster_pre_total.school
+		, roster_pre_total.display_name
+		, roster_pre_total.display_grade
+		
+)
+
+
+SELECT JSON_ARRAYAGG(
+			JSON_OBJECT( *  )
+			ORDER BY SUBSTR(sort_order, 0, 4)
+				, display_grade
+				, sort_order
+				, display_name
+			RETURNING CLOB
+		) form_object
+	FROM (
+
+SELECT *
+
+FROM roster_total
+
+ORDER BY SUBSTR(sort_order, 0, 4)
+	, display_grade
+	, sort_order
+	, display_name
+	
+	
+) foo]

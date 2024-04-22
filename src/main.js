@@ -1,6 +1,6 @@
 import './app.css'
 import App from './App.svelte'
-import Button from './components/Counter.svelte'
+import 'virtual:uno.css'
 
 const app = new App({
   target: document.getElementById('app'),

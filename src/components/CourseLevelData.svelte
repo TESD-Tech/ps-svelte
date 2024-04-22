@@ -1,6 +1,7 @@
+<svelte:options customElement="ps-svelte-course-level-data" />
 <script>
   import { onMount } from 'svelte';
-  import devData  from '../assets/courseData.json'
+  import devData  from '../assets/course_data.json'
 
   let data = [];
 
@@ -9,12 +10,14 @@
 
   onMount(async () => {
     if (isProduction) {
-      const response = await fetch('/admin/tesd_custom_reports/json_course_level_data.json');
+      const response = await fetch('/admin/ps-svelte/json/json_course_level_data.json');
       data = await response.json();
     } else {
       // Use development sections data
       data = devData
     }
+
+    console.log(data)
 
   });
 
@@ -22,40 +25,104 @@
 </script>
 
 <style>
-  /* Styling for tables and cells */
+  .rotate {
+    transform: rotate(-90deg);
+
+    white-space: nowrap;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  table th, table td {
+    border: 1px solid black;
+    padding: 8px;
+  }
+
+  #report {
+    font-family: Arial, Helvetica, sans-serif
+  }
+
+
 </style>
 
-{#each schools as school}
-  <h2>{school}</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Course Name</th>
-        <th>Enrollments</th>
-        <th>Actual_A %_A</th>
-        <th>Actual_B %_B</th>
-        <th>Actual_H %_H</th>
-        <th>Actual_M %_M</th>
-        <th>Actual_W %_W</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each data.filter(d => d.SCHOOL === school) as course}
-        <tr>
-          <td>{course.DISPLAY_NAME || course.DISPLAY_GRADE}</td>
-          <td>{course.TOTAL_STUDENTS}</td>
-          <td>{course.A} ({course.A_PERCENTAGE}%)</td>
-          <td>{course.B} ({course.B_PERCENTAGE}%)</td>
-          <td>{course.H} ({course.H_PERCENTAGE}%)</td>
-          <td>{course.M} ({course.M_PERCENTAGE}%)</td>
-          <td>{course.W} ({course.W_PERCENTAGE}%)</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{/each}
+<div id="report" class="grid grid-flow-col gap-6 border-collapse grid-cols-1 grid-rows-4">
 
-<p>
-  A: Asian M: Multiracial AP: Advanced Placement X: Accelerated<br>
-  B: Black or African American W: White H: Honors A: Academic H: Hispanic/Latino
-</p>
+  {#each schools as school}
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="bg-slate-400">&nbsp;</th>
+          <th class="bg-slate-400">Course Name</th>
+          <th class="bg-slate-400">Enrollments</th>
+          <th class="bg-slate-400">Actual_A</th>
+          <th class="bg-slate-400">%_A</th>
+          <th class="bg-slate-400">Actual_B</th>
+          <th class="bg-slate-400">%_B</th>
+          <th class="bg-slate-400">Actual_H</th>
+          <th class="bg-slate-400">%_H</th>
+          <th class="bg-slate-400">Actual_M</th>
+          <th class="bg-slate-400">%_M</th>
+          <th class="bg-slate-400">Actual_W</th>
+          <th class="bg-slate-400">%_W</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each data.filter(d => d.SCHOOL === school) as course, index}
+          <tr>
+            {#if index === 0}
+              <td class="rotate" rowspan={data.filter(d => d.SCHOOL === school).length}>{school}</td>
+            {/if}
+            
+            {#if course.DISPLAY_NAME}
+            <td class="text-center">{course.DISPLAY_NAME}</td>
+            <td class="text-center">{course.TOTAL_STUDENTS}</td>
+            <td class="text-center">{course.A}</td>
+            <td class="text-center">{course.A_PERCENTAGE}%</td>
+            <td class="text-center">{course.B}</td>
+            <td class="text-center">{course.B_PERCENTAGE}%</td>
+            <td class="text-center">{course.H}</td>
+            <td class="text-center">{course.H_PERCENTAGE}%</td>
+            <td class="text-center">{course.M}</td>
+            <td class="text-center">{course.M_PERCENTAGE}%</td>
+            <td class="text-center">{course.W}</td>
+            <td class="text-center">{course.W_PERCENTAGE}%</td>
+            {:else}
+            <td class="bg-slate-400">&nbsp;</td>
+            <td class="text-center bg-slate-400">{course.DISPLAY_GRADE}</td> 
+            <td class="text-center bg-slate-400" colspan=2>A: {course.A_PERCENTAGE}%</td>
+            <td class="text-center bg-slate-400" colspan=2>B: {course.B_PERCENTAGE}%</td>
+            <td class="text-center bg-slate-400" colspan=2>H: {course.H_PERCENTAGE}%</td>
+            <td class="text-center bg-slate-400" colspan=2>M: {course.M_PERCENTAGE}%</td>
+            <td class="text-center bg-slate-400" colspan=2>W: {course.W_PERCENTAGE}%</td>
+            {/if}
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {/each}
+
+  <div class="grid grid-cols-2">
+    <div>
+      <div class="grid grid-cols-2 border border-slate-400">
+        <h4 class="col-span-2 text-center">Key</h4>
+        <div>A: Asian</div>
+        <div>M: Multiracial</div>
+        <div>B: Black or African American</div>
+        <div>W: White</div>
+        <div>H: Hispanic/Latino</div>
+      </div>
+    </div>
+    <div>
+      <div class="grid grid-cols-2 border border-slate-400">
+        <h4 class="col-span-2 text-center">CHS Levels</h4>
+        <div class="border-2 border-indigo-500">AP: Advanced Placement</div>
+        <div>X: Accelerated</div>
+        <div>H: Honors</div>
+        <div>A: Academic</div>
+      </div>
+    </div>
+  </div>
+</div>
