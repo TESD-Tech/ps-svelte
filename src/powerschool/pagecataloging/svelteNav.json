@@ -1,0 +1,12 @@
+{
+  "pages": [
+    {
+      "htmlID": "svelteNavCourseLevelData",
+      "title": "Districtwide Course Level Data",
+      "version": "24.4.19",
+      "sortOrder": 200,
+      "pageURL": "/admin/ps-svelte/course_level_data.html",
+      "parentHTMLID": "navDataAndReportingSchoolReports"
+    }
+  ]
+}
