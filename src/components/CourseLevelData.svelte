@@ -1,6 +1,8 @@
 <svelte:options customElement="ps-svelte-course-level-data" />
 <script>
   import { onMount } from 'svelte';
+  import GenericModal from './GenericModal.svelte';
+  import { cubicOut } from 'svelte/easing';
   import dev_student from '../data/course_level_data_student.json';
   import dev_roster from '../data/course_level_data_roster.json';
 
@@ -9,7 +11,9 @@
   let grade_level_lookup = {};
   let courses = {};
   let asOfDate = new Date().toISOString().split('T')[0];
-  let key = 0; // For update visualization
+  let showModal = false;
+  let selectedCourse;
+
   const isProduction = !import.meta.env.DEV;
 
   // Function to fetch data based on environment and date
@@ -19,6 +23,25 @@
     return isProduction
       ? await (await fetch(`/admin/ps-svelte/json/course_level_data_roster.json${queryString}`)).json()
       : dev_roster;
+  }
+
+  function showCourseDetails(course, ethnicity) {
+    // Aggregate student data for the selected course and ethnicity
+    course.classes = course.students.reduce((acc, student) => {
+      acc[student.COURSE_NAME] ??= { ...ethicalities.reduce((acc, e) => ({ ...acc, [e]: 0 }), {}), TOTAL_STUDENTS: 0 };
+      acc[student.COURSE_NAME][student.ETHNICITY] += 1;
+      acc[student.COURSE_NAME].TOTAL_STUDENTS += 1;
+      
+      return acc;
+    }, {});
+
+    console.log(course)
+    selectedCourse = course;
+    showModal = true;
+  }
+
+  function closeModal() {
+    showModal = !showModal;
   }
 
   // Function to process student data and populate grade_level_lookup
@@ -46,9 +69,11 @@
         TOTAL_STUDENTS: 0,
         SORT_ORDER: r.SORT_ORDER,
         DISPLAY_GRADE: r.DISPLAY_GRADE,
+        students: [],
       };
       courses[r.DISPLAY_NAME].TOTAL_STUDENTS += 1;
       courses[r.DISPLAY_NAME][r.ETHNICITY] += 1;
+      courses[r.DISPLAY_NAME].students.push(r);
     });
   }
 
@@ -80,17 +105,23 @@
     if (!asOfDate) asOfDate = new Date().toISOString().split('T')[0];
     processStudentData(isProduction ? await (await fetch(`/admin/ps-svelte/json/course_level_data_student.json?asOfDate=${asOfDate}`)).json() : dev_student);
     processCourseData(rosters);
-    const groupedData = rosters.reduce((acc, item) => {
+    let groupedData = rosters.reduce((acc, item) => {
       const key = `${item.DISPLAY_NAME}-${item.DISPLAY_GRADE}`;
+      item.students = [];
       acc[key] ??= { ...item, ...ethicalities.reduce((acc, e) => ({ ...acc, [e]: 0 }), {}), TOTAL_STUDENTS: 0 };
       acc[key][item.ETHNICITY]++;
+      acc[key].students.push(item);
+      acc[key].TOTAL_STUDENTS++;
       return acc;
     }, {});
+
     data = formatData(groupedData);
     data = sortData(data);
     data = insertGradeLevelData(data);
 
     courses = sortData(formatData(courses), 'SORT_ORDER');
+
+    console.log(data);
 
     tasteTheRainbow();
   }
@@ -118,11 +149,10 @@
   function tasteTheRainbow() {
     document.querySelectorAll('.pulse').forEach((el, i) => {
       setTimeout(() => {
-        console.log(el)
         el.classList.remove('pulse');
         void el.offsetWidth; // force reflow
         el.classList.add('pulse');
-      }, i * 5);
+      }, i * 2);
     });
   }
 
@@ -134,6 +164,7 @@
   $: {
     (async () => {
       await updateData(asOfDate);
+      tasteTheRainbow()
     })();
   }
 </script>
@@ -159,21 +190,6 @@
     font-family: Arial, Helvetica, sans-serif
   }
 
-  @keyframes rainbow {
-    0% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
-    14% { background-color: #FFDFBA; opacity: 1; } /* Light Orange */
-    28% { background-color: #FFFFBA; opacity: 1; } /* Light Yellow */
-    42% { background-color: #BAFFC9; opacity: 1; } /* Light Green */
-    57% { background-color: #BAE1FF; opacity: 1; } /* Light Blue */
-    71% { background-color: #BABAFF; opacity: 1; } /* Light Indigo */
-    85% { background-color: #DABAFF; opacity: 1; } /* Light Violet */
-    100% { background-color: #FFB3BA; opacity: 0; } /* Light Red */
-  }
-
-  .rainbow {
-    animation: rainbow 2s ease-in-out;
-  }
-  
   @keyframes pulse {
     0% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
     14% { background-color: #FFDFBA; opacity: .9; } /* Light Orange */
@@ -191,7 +207,32 @@
 
 </style>
 
+
 <div id="report" class="">
+  <GenericModal title={selectedCourse ? selectedCourse.DISPLAY_NAME : ''} bind:isOpen={showModal} on:close={closeModal}>
+    <div slot="body">
+      {#if selectedCourse}
+        <table>
+          <thead>
+            <tr>
+              <th>Course Name</th>
+              <th>Grade</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each Object.values(selectedCourse.classes) as course}
+              <tr>
+                <td>{JSON.stringify(course)}</td>
+                <td>{course.DISPLAY_GRADE}</td>
+                <td>{course.TOTAL_STUDENTS}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      {/if}
+    </div>
+  </GenericModal>
   <h2>Distrtictwide Course Level Data</h2>
   <div class="pb-4">
     <label for="asOfDate">As of: </label>
@@ -222,7 +263,7 @@
               
               {#if course.DISPLAY_NAME}
                 <td class="text-center">{course.DISPLAY_NAME}</td>
-                <td class="text-center pulse" style="animation-delay: {index * 0.1}s">{getEnrollments(course)}</td>
+                <td on:click={() => showCourseDetails(course)} class="text-center pulse hover:cursor-pointer" style="animation-delay: {index * 0.1}s">{getEnrollments(course)}</td>
 
                 {#each ethicalities as e}
                   <td class="text-center pulse" style="animation-delay: {index * 0.1}s">{course[e]}</td>
