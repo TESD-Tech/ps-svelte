@@ -1,0 +1,166 @@
+~[tlist_sql;
+WITH filtered_students AS (
+	SELECT student_number
+		, dcid
+		, id
+		, GRADE_LEVEL
+		, students.schoolid
+		, students.ETHNICITY
+		, students.ENTRYDATE
+		, students.EXITDATE
+
+	FROM students
+	WHERE students.SCHOOLID BETWEEN 2000 AND 5000
+		AND students.GRADE_LEVEL > 1
+		AND students.LAST_NAME != 'Tester'
+		AND students.LAST_NAME NOT LIKE 'DUP-%'
+		AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
+		
+-- 		AND students.GRADE_LEVEL = 5
+-- 		AND students.schoolid IN (3323, 3327)
+-- 		AND students.SCHOOLID = 2080
+-- 		AND students.STUDENT_NUMBER = 2024170
+
+
+	UNION
+	
+		SELECT students.student_number
+		, students.dcid
+		, students.id
+		, REENROLLMENTS.GRADE_LEVEL
+		, REENROLLMENTS.schoolid
+		, students.ETHNICITY
+		, REENROLLMENTS.ENTRYDATE
+		, REENROLLMENTS.EXITDATE
+
+	FROM students
+		INNER JOIN REENROLLMENTS ON REENROLLMENTS.STUDENTID = students.id
+			AND REENROLLMENTS.SCHOOLID BETWEEN 2000 AND 5000
+			AND REENROLLMENTS.GRADE_LEVEL > 1
+			AND TO_DATE( '~(asOfDate)', 'YYYY-MM-DD' ) BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
+	WHERE students.LAST_NAME != 'Tester'
+		AND students.LAST_NAME NOT LIKE 'DUP-%'
+
+)
+, rosters AS (
+	SELECT 
+		cc.COURSE_NUMBER
+		, courses.course_name
+		, CASE WHEN MIN(cc.SCHOOLID) = 2080 THEN
+					CASE WHEN courses.SCHED_DEPARTMENT = 'MA' THEN 'MATH '
+						WHEN courses.SCHED_DEPARTMENT = 'SC' THEN 'SCI '
+						WHEN courses.SCHED_DEPARTMENT = 'SS' THEN 'SS '
+						WHEN courses.SCHED_DEPARTMENT = 'EN' THEN 'ENG '
+						ELSE '' END
+						
+					|| CASE WHEN courses.CREDITTYPE IN ('H*', 'H') THEN 'AP/Honors'
+						WHEN courses.CREDITTYPE = 'OSNU' THEN ''
+						ELSE 'X/Academic' END
+				WHEN MIN(cc.SCHOOLID) > 4000 THEN
+					courses.course_name
+				
+			ELSE
+				CASE WHEN courses.course_name 
+					IN ( 'A Math 5','Pre Alg 5','A Math 6','Algebra 1-6','Pre Alg 6','Algebra 1-7','Geometry 7','Pre Alg 7','Algebra 2-8','Algebra 8','Geometry 8','Math Analysis', 'Algebra 2-7', 'Geometry 6' ) 
+					THEN 'Above '
+				WHEN courses.COURSE_NAME IN ( 'O Math 5','O Math 6','O Math 7','Pre Alg 8', 'Rr Math 5', 'Rr Math 6', 'Rr Math 7' ) 
+					THEN 'On '
+			
+				WHEN courses.course_name IN ('Rr Reading 5','Rr Reading 6', 'Reading 5', 'Reading 6') 
+					THEN 'On/Below '
+			
+			
+				WHEN SUBSTR( courses.course_name, 0, 2 ) LIKE 'O %' AND courses.SCHED_DEPARTMENT != 'RD' THEN 'On '
+				WHEN SUBSTR( courses.course_name, 0, 2 ) LIKE 'O %' AND courses.SCHED_DEPARTMENT = 'RD' THEN 'On/Below '
+				WHEN SUBSTR( courses.course_name, 0, 2 ) LIKE 'A %' THEN 'Above '
+				WHEN courses.course_name LIKE '% 8' THEN 'Above '
+
+				
+				ELSE '' END
+				
+				|| CASE WHEN courses.SCHED_DEPARTMENT = 'MA' THEN 'Math '
+					WHEN courses.SCHED_DEPARTMENT = 'RD' THEN 'Reading '
+					ELSE '' END 
+					
+				|| CASE WHEN courses.course_name = 'Math Analysis' THEN '8' 
+					ELSE SUBSTR(courses.course_name, LENGTH(courses.COURSE_NAME), 1 )
+					END
+			
+			END DISPLAY_NAME
+
+		, courses.SCHED_DEPARTMENT
+		, CASE WHEN MAX(cc.SCHOOLID) > 4000 THEN 'Elementary School'
+			WHEN MAX(cc.schoolid) = 2080 THEN 'High School'
+			ELSE 'Middle School' END School
+		, MIN(cc.SCHOOLID) schoolid
+		, CASE WHEN courses.SCHED_DEPARTMENT = 'MA' THEN 1
+				WHEN courses.SCHED_DEPARTMENT = 'SC' THEN 2
+				WHEN courses.SCHED_DEPARTMENT = 'SS' THEN 3
+				WHEN courses.SCHED_DEPARTMENT = 'EN' THEN 4
+				ELSE 5 END department_sort
+
+		, filtered_students.student_number
+		, MAX(filtered_students.ETHNICITY) ETHNICITY
+		
+		, CASE WHEN filtered_students.GRADE_LEVEL IN ( '9', '10', '11', '12') THEN 'Grades 9-12'
+			ELSE 'Grade ' || filtered_students.GRADE_LEVEL END DISPLAY_GRADE
+	FROM cc 
+	 
+		INNER JOIN filtered_students ON filtered_students.id = cc.STUDENTID
+ 		INNER JOIN courses ON courses.COURSE_NUMBER = cc.COURSE_NUMBER
+ 			AND (
+					( courses.SCHED_DEPARTMENT IN ('MA', 'SC', 'EN', 'SS') AND courses.SCHOOLID = 2080 )
+					OR ( courses.schoolid IN ( 3323, 3327 ) AND courses.SCHED_DEPARTMENT IN ( 'MA') )
+					OR ( courses.schoolid IN ( 3323, 3327 ) AND courses.SCHED_DEPARTMENT IN ( 'RD') AND (courses.COURSE_NAME LIKE '% 6' OR courses.course_name LIKE '% 5' ) )	
+					OR ( courses.schoolid = 0 AND ( courses.SCHED_DEPARTMENT IN ( 'MA') )
+			)
+			
+		)
+	WHERE TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
+		
+	GROUP BY cc.COURSE_NUMBER
+		, courses.course_name
+		, courses.SCHED_DEPARTMENT
+		, courses.CREDITTYPE
+		, filtered_students.student_number
+		, filtered_students.GRADE_LEVEL
+
+)
+
+
+-- SELECT rosters.*
+-- 	, schoolid
+-- 		 || '-' || department_sort
+-- 		 || '-' || DISPLAY_GRADE
+-- 		 || '-' || DISPLAY_NAME sort_order
+
+-- FROM rosters
+
+
+-- ORDER BY schoolid
+-- 		 || '-' || department_sort
+-- 		 || '-' || DISPLAY_GRADE
+-- 		 || '-' || DISPLAY_NAME
+
+
+
+-- ;
+
+SELECT JSON_ARRAYAGG(
+			JSON_OBJECT( * )
+			ORDER BY sort_order
+			RETURNING CLOB
+		) rosters
+		
+FROM (
+
+SELECT rosters.*
+	, schoolid
+		 || '-' || department_sort
+		 || '-' || DISPLAY_GRADE
+		 || '-' || DISPLAY_NAME sort_order
+
+FROM rosters
+
+	
+) foo]~(json_obj)[/tlist_sql]

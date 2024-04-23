@@ -1,0 +1,69 @@
+~[tlist_sql;
+WITH filtered_students AS (
+	SELECT student_number
+		, dcid
+		, id
+		, GRADE_LEVEL
+		, students.schoolid
+		, students.ETHNICITY
+		, students.ENTRYDATE
+		, students.EXITDATE
+		, CASE WHEN students.GRADE_LEVEL IN ( '9', '10', '11', '12') THEN 'Grades 9-12'
+			ELSE 'Grade ' || students.GRADE_LEVEL END DISPLAY_GRADE
+		, CASE WHEN students.schoolid = 2080 THEN 'High School'
+			WHEN students.schoolid BETWEEN 3000 AND 4000 THEN 'Middle School'
+			ELSE 'Elementary School' END school
+
+	FROM students
+	WHERE students.SCHOOLID BETWEEN 2000 AND 5000
+		AND students.GRADE_LEVEL > 1
+		AND students.LAST_NAME != 'Tester'
+		AND students.LAST_NAME NOT LIKE 'DUP-%'
+		AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
+		
+-- 		AND students.GRADE_LEVEL = 5
+-- 		AND students.schoolid IN (3323, 3327)
+-- 		AND students.SCHOOLID = 2080
+-- 		AND students.STUDENT_NUMBER = 2024170
+
+
+	UNION
+	
+		SELECT students.student_number
+		, students.dcid
+		, students.id
+		, REENROLLMENTS.GRADE_LEVEL
+		, REENROLLMENTS.schoolid
+		, students.ETHNICITY
+		, REENROLLMENTS.ENTRYDATE
+		, REENROLLMENTS.EXITDATE
+		, CASE WHEN REENROLLMENTS.GRADE_LEVEL IN ( '9', '10', '11', '12') THEN 'Grades 9-12'
+			ELSE 'Grade ' || REENROLLMENTS.GRADE_LEVEL END DISPLAY_GRADE
+		, CASE WHEN REENROLLMENTS.schoolid = 2080 THEN 'High School'
+			WHEN REENROLLMENTS.schoolid BETWEEN 3000 AND 4000 THEN 'Middle School'
+			ELSE 'Elementary School' END school
+
+	FROM students
+		INNER JOIN REENROLLMENTS ON REENROLLMENTS.STUDENTID = students.id
+			AND REENROLLMENTS.SCHOOLID BETWEEN 2000 AND 5000
+			AND REENROLLMENTS.GRADE_LEVEL > 1
+			AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
+	WHERE students.LAST_NAME != 'Tester'
+		AND students.LAST_NAME NOT LIKE 'DUP-%'
+
+)
+
+
+SELECT JSON_ARRAYAGG(
+			JSON_OBJECT( * )
+			RETURNING CLOB
+		) rosters
+		
+FROM (
+
+SELECT *
+
+FROM filtered_students
+
+	
+) foo]~(json_obj)[/tlist_sql]
