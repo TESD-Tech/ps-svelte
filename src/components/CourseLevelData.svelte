@@ -15,7 +15,7 @@
   async function fetchData(asOfDate) {
     const queryString = asOfDate ? `?asOfDate=${asOfDate}` : '';
     return isProduction
-      ? await (await fetch(`/admin/ps-svelte/json/course_level_data.json${queryString}`)).json()
+      ? await (await fetch(`/admin/ps-svelte/json/course_level_data_roster.json${queryString}`)).json()
       : dev_roster;
   }
 
