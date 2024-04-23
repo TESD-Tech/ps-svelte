@@ -127,25 +127,6 @@ WITH filtered_students AS (
 
 )
 
-
--- SELECT rosters.*
--- 	, schoolid
--- 		 || '-' || department_sort
--- 		 || '-' || DISPLAY_GRADE
--- 		 || '-' || DISPLAY_NAME sort_order
-
--- FROM rosters
-
-
--- ORDER BY schoolid
--- 		 || '-' || department_sort
--- 		 || '-' || DISPLAY_GRADE
--- 		 || '-' || DISPLAY_NAME
-
-
-
--- ;
-
 SELECT JSON_ARRAYAGG(
 			JSON_OBJECT( * )
 			ORDER BY sort_order

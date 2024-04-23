@@ -9,11 +9,13 @@
   let grade_level_lookup = {};
   let courses = {};
   let asOfDate = new Date().toISOString().split('T')[0];
+  let key = 0; // For update visualization
   const isProduction = !import.meta.env.DEV;
 
   // Function to fetch data based on environment and date
   async function fetchData(asOfDate) {
-    const queryString = asOfDate ? `?asOfDate=${asOfDate}` : '';
+    // Default to today's date if no date is provided
+    const queryString = asOfDate ? `?asOfDate=${asOfDate}` : `?asOfDate=${new Date().toISOString().split('T')[0]}`;
     return isProduction
       ? await (await fetch(`/admin/ps-svelte/json/course_level_data_roster.json${queryString}`)).json()
       : dev_roster;
@@ -61,17 +63,8 @@
     }));
   }
 
-  // Function to sort data based on school and display name/order
+  // Function to sort the data array by school and then by SORT_ORDER
   function sortData(dataToSort, sortBy = 'SORT_ORDER') {
-    // return dataToSort.sort((a, b) => {
-    //   if (a.SORT_ORDER.slice(0, 4) !== b.SORT_ORDER.slice(0, 4)) {
-    //     return a.SORT_ORDER.slice(0, 4) < b.SORT_ORDER.slice(0, 4) ? -1 : 1;
-    //   }
-    //   return a[sortBy] < b[sortBy] ? -1 : 1;
-    // });
-
-
-    // Sort the data array by school and then by SORT_ORDER
     return Object.values(dataToSort).sort((a, b) => {
       if (a.SORT_ORDER.slice(0,4) < b.SORT_ORDER.slice(0,4)) return -1;
       if (a.SORT_ORDER.slice(0,4) > b.SORT_ORDER.slice(0,4)) return 1;
@@ -84,7 +77,8 @@
   // Update data function
   async function updateData(asOfDate) {
     const rosters = await fetchData(asOfDate);
-    processStudentData(isProduction ? await (await fetch('/admin/ps-svelte/json/course_level_data_student.json')).json() : dev_student);
+    if (!asOfDate) asOfDate = new Date().toISOString().split('T')[0];
+    processStudentData(isProduction ? await (await fetch(`/admin/ps-svelte/json/course_level_data_student.json?asOfDate=${asOfDate}`)).json() : dev_student);
     processCourseData(rosters);
     const groupedData = rosters.reduce((acc, item) => {
       const key = `${item.DISPLAY_NAME}-${item.DISPLAY_GRADE}`;
@@ -94,12 +88,42 @@
     }, {});
     data = formatData(groupedData);
     data = sortData(data);
+    data = insertGradeLevelData(data);
+
     courses = sortData(formatData(courses), 'SORT_ORDER');
+
+    tasteTheRainbow();
+  }
+
+  // Function to insert grade level data into the data array
+  let last_deptartment_and_grade = '';
+  function insertGradeLevelData(data) {
+    // Iterate over data and insert grade level data when DISPLAY_GRADE changes
+    data.forEach((d, i) => {
+      if (d.SCHED_DEPARTMENT + '-' + d.DISPLAY_GRADE !== last_deptartment_and_grade) {
+        last_deptartment_and_grade = d.SCHED_DEPARTMENT + '-' + d.DISPLAY_GRADE;
+        data.splice(i, 0, grade_level_lookup[d.DISPLAY_GRADE]);
+      }
+    });
+
+    return [...data];
   }
 
   // Function to get total enrollments for a course 
   function getEnrollments(course) {
     return ethicalities.reduce((total, e) => total + course[e], 0);
+  }
+
+  // Toggle the pulse class on the table cells
+  function tasteTheRainbow() {
+    document.querySelectorAll('.pulse').forEach((el, i) => {
+      setTimeout(() => {
+        console.log(el)
+        el.classList.remove('pulse');
+        void el.offsetWidth; // force reflow
+        el.classList.add('pulse');
+      }, i * 5);
+    });
   }
 
   onMount(async () => {
@@ -135,6 +159,35 @@
     font-family: Arial, Helvetica, sans-serif
   }
 
+  @keyframes rainbow {
+    0% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
+    14% { background-color: #FFDFBA; opacity: 1; } /* Light Orange */
+    28% { background-color: #FFFFBA; opacity: 1; } /* Light Yellow */
+    42% { background-color: #BAFFC9; opacity: 1; } /* Light Green */
+    57% { background-color: #BAE1FF; opacity: 1; } /* Light Blue */
+    71% { background-color: #BABAFF; opacity: 1; } /* Light Indigo */
+    85% { background-color: #DABAFF; opacity: 1; } /* Light Violet */
+    100% { background-color: #FFB3BA; opacity: 0; } /* Light Red */
+  }
+
+  .rainbow {
+    animation: rainbow 2s ease-in-out;
+  }
+  
+  @keyframes pulse {
+    0% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
+    14% { background-color: #FFDFBA; opacity: .9; } /* Light Orange */
+    28% { background-color: #FFFFBA; opacity: .8; } /* Light Yellow */
+    42% { background-color: #BAFFC9; opacity: .7; } /* Light Green */
+    57% { background-color: #BAE1FF; opacity: .7; } /* Light Blue */
+    71% { background-color: #BABAFF; opacity: .8; } /* Light Indigo */
+    85% { background-color: #DABAFF; opacity: .9; } /* Light Violet */
+    100% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
+  }
+
+  .pulse {
+    animation: pulse .26s ease-out;
+  }
 
 </style>
 
@@ -150,19 +203,14 @@
       <table class="table">
         <thead>
           <tr>
-            <th class="bg-slate-400">&nbsp;</th>
-            <th class="bg-slate-400">Course Name</th>
-            <th class="bg-slate-400">Enrollments</th>
-            <th class="bg-slate-400">Actual_A</th>
-            <th class="bg-slate-400">%_A</th>
-            <th class="bg-slate-400">Actual_B</th>
-            <th class="bg-slate-400">%_B</th>
-            <th class="bg-slate-400">Actual_H</th>
-            <th class="bg-slate-400">%_H</th>
-            <th class="bg-slate-400">Actual_M</th>
-            <th class="bg-slate-400">%_M</th>
-            <th class="bg-slate-400">Actual_W</th>
-            <th class="bg-slate-400">%_W</th>
+            <th class="bg-gray-400">&nbsp;</th>
+            <th class="bg-gray-400">Course Name</th>
+            <th class="bg-gray-400">Enrollments</th>
+
+            {#each ethicalities as e}
+              <th class="bg-gray-400">Actual {e}</th>
+              <th class="bg-gray-400">% {e}</th>
+            {/each}
           </tr>
         </thead>
         <tbody>
@@ -174,19 +222,18 @@
               
               {#if course.DISPLAY_NAME}
                 <td class="text-center">{course.DISPLAY_NAME}</td>
-                <td class="text-center">{getEnrollments(course)}</td>
+                <td class="text-center pulse" style="animation-delay: {index * 0.1}s">{getEnrollments(course)}</td>
 
                 {#each ethicalities as e}
-                  <td class="text-center">{course[e]}</td>
-                  <td class="text-center">{Math.round(course[e] / getEnrollments(course) * 100)}%</td>
+                  <td class="text-center pulse" style="animation-delay: {index * 0.1}s">{course[e]}</td>
+                  <td class="text-center pulse" style="animation-delay: {index * 0.1}s">{Math.round(course[e] / getEnrollments(course) * 100)}%</td>
                 {/each}
               {:else}
-              <td class="bg-slate-400">&nbsp;</td>
-              <td class="text-center bg-slate-400">{course.DISPLAY_GRADE}</td> 
+              <td class="bg-gray-400">&nbsp;</td>
+              <td class="text-center bg-gray-400">{course.DISPLAY_GRADE}</td> 
 
               {#each ethicalities as e}
-                <td class="text-center">{course[e]}</td>
-                <td class="text-center">A: {Math.round(course[e] / course.TOTAL_STUDENTS * 100)}%</td>
+                <td class="text-center bg-gray-400" colspan=2>{e}: {Math.round(course[e] / course.TOTAL_STUDENTS * 100)}%</td>
               {/each}
 
               {/if}
@@ -198,7 +245,7 @@
   
     <div class="grid grid-cols-2">
       <div>
-        <div class="grid grid-cols-2 border border-slate-400">
+        <div class="grid grid-cols-2 border border-gray-400">
           <h4 class="col-span-2 text-center">Key</h4>
           <div>A: Asian</div>
           <div>M: Multiracial</div>
@@ -208,7 +255,7 @@
         </div>
       </div>
       <div>
-        <div class="grid grid-cols-2 border border-slate-400">
+        <div class="grid grid-cols-2 border border-gray-400">
           <h4 class="col-span-2 text-center">CHS Levels</h4>
           <div class="border-2 border-indigo-500">AP: Advanced Placement</div>
           <div>X: Accelerated</div>
