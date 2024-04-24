@@ -1,0 +1,7 @@
+<!-- START teachers_nav_css.ps-svelte.leftnav.footer.txt -->
+<script>
+  $j(document).ready(function () {
+    $j('#nav-main').find('ul').eq(0).prepend("<li><a href='/teachers/ps-svelte/testing_calendar.html'>TESD Testing Calendar</a></li>");
+  });
+</script>
+<!-- END teachers_nav_css.ps-svelte.leftnav.footer.txt -->

@@ -29,11 +29,15 @@
         tests.set(testing_calendar_tests);
         return;
       }
-      const response = await fetch(`/admin/ps-svelte/json/testing_calendar_days.json`);
+
+      let pathParts = window.location.pathname.split('/');
+      const portal = pathParts[1];
+
+      const response = await fetch(`/${portal}/ps-svelte/json/testing_calendar_days.json`);
       const newData = await response.json();
       data.set(newData);
 
-      const responseTests = await fetch(`/admin/ps-svelte/json/testing_calendar_tests.json`);
+      const responseTests = await fetch(`/${portal}/ps-svelte/json/testing_calendar_tests.json`);
       const newTests = await responseTests.json();
       tests.set(newTests);
     } catch (err) {
@@ -59,10 +63,7 @@
     let nextDay = new Date(targetDate);
     nextDay.setDate(nextDay.getDate() + 1);
 
-    console.log('Filtering data for date:', targetDate, nextDay)
-    console.log('Current data:', currentData)
     filteredData.set(currentData.filter((item) => new Date(item.DATE_VALUE) < nextDay));
-    console.log('Filtered data:', get(filteredData))
 
     // Add percentage before and after
     filteredData.update((value) => {
