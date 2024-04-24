@@ -123,7 +123,7 @@
 
     console.log(data);
 
-    tasteTheRainbow();
+    // tasteTheRainbow();
   }
 
   // Function to insert grade level data into the data array
@@ -164,7 +164,7 @@
   $: {
     (async () => {
       await updateData(asOfDate);
-      tasteTheRainbow()
+      // tasteTheRainbow()
     })();
   }
 </script>
@@ -226,11 +226,11 @@
               
               {#if course.DISPLAY_NAME}
                 <td class="text-center">{course.DISPLAY_NAME}</td>
-                <td on:click={() => showCourseDetails(course)} class="text-center pulse hover:cursor-pointer" style="animation-delay: {index * 0.1}s">{getEnrollments(course)}</td>
+                <td on:click={() => showCourseDetails(course)} class="text-center hover:cursor-pointer" style="animation-delay: {index * 0.1}s">{getEnrollments(course)}</td>
 
                 {#each ethicalities as e}
-                  <td class="text-center pulse" style="animation-delay: {index * 0.1}s">{course[e]}</td>
-                  <td class="text-center pulse" style="animation-delay: {index * 0.1}s">{Math.round(course[e] / getEnrollments(course) * 100)}%</td>
+                  <td class="text-center" style="animation-delay: {index * 0.1}s">{course[e]}</td>
+                  <td class="text-center" style="animation-delay: {index * 0.1}s">{Math.round(course[e] / getEnrollments(course) * 100)}%</td>
                 {/each}
               {:else}
               <td class="bg-gray-400">&nbsp;</td>
