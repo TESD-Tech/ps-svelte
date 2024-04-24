@@ -169,45 +169,6 @@
   }
 </script>
 
-<style>
-  .rotate {
-    transform: rotate(-90deg);
-
-    white-space: nowrap;
-  }
-
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  table th, table td {
-    border: 1px solid black;
-    padding: 8px;
-  }
-
-  #report {
-    font-family: Arial, Helvetica, sans-serif
-  }
-
-  @keyframes pulse {
-    0% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
-    14% { background-color: #FFDFBA; opacity: .9; } /* Light Orange */
-    28% { background-color: #FFFFBA; opacity: .8; } /* Light Yellow */
-    42% { background-color: #BAFFC9; opacity: .7; } /* Light Green */
-    57% { background-color: #BAE1FF; opacity: .7; } /* Light Blue */
-    71% { background-color: #BABAFF; opacity: .8; } /* Light Indigo */
-    85% { background-color: #DABAFF; opacity: .9; } /* Light Violet */
-    100% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
-  }
-
-  .pulse {
-    animation: pulse .26s ease-out;
-  }
-
-</style>
-
-
 <div id="report" class="">
   <GenericModal title={selectedCourse ? selectedCourse.DISPLAY_NAME : ''} bind:isOpen={showModal} on:close={closeModal}>
     <div slot="body">
@@ -307,3 +268,42 @@
     </div>
   </div>
 </div>
+
+
+<style>
+  .rotate {
+    transform: rotate(-90deg);
+
+    white-space: nowrap;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  table th, table td {
+    border: 1px solid black;
+    padding: 8px;
+  }
+
+  #report {
+    font-family: Arial, Helvetica, sans-serif
+  }
+
+  @keyframes pulse {
+    0% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
+    14% { background-color: #FFDFBA; opacity: .9; } /* Light Orange */
+    28% { background-color: #FFFFBA; opacity: .8; } /* Light Yellow */
+    42% { background-color: #BAFFC9; opacity: .7; } /* Light Green */
+    57% { background-color: #BAE1FF; opacity: .7; } /* Light Blue */
+    71% { background-color: #BABAFF; opacity: .8; } /* Light Indigo */
+    85% { background-color: #DABAFF; opacity: .9; } /* Light Violet */
+    100% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
+  }
+
+  .pulse {
+    animation: pulse .26s ease-out;
+  }
+
+</style>

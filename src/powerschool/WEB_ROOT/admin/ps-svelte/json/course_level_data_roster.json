@@ -117,8 +117,6 @@ WITH filtered_students AS (
 			
 		)
 	WHERE TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
-
-		AND cc.course_number NOT IN ('')
 		
 	GROUP BY cc.COURSE_NUMBER
 		, courses.course_name

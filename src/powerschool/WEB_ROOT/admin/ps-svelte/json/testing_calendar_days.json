@@ -1,0 +1,49 @@
+~[tlist_sql;
+WITH date_list AS (
+	SELECT TO_CHAR( CALENDAR_DAY.DATE_VALUE, 'MM/DD/YYYY' ) Cal_Date
+		, CALENDAR_DAY.DATE_VALUE
+		, rownum Day_number
+	FROM terms
+		INNER JOIN CALENDAR_DAY ON CALENDAR_DAY.SCHOOLID = terms.SCHOOLID
+			AND CALENDAR_DAY.DATE_VALUE BETWEEN terms.FIRSTDAY AND terms.LASTDAY
+			AND CALENDAR_DAY.MEMBERSHIPVALUE = 1
+			AND CALENDAR_DAY.INSESSION = 1
+			AND calendar_day.DATE_VALUE <= TO_DATE('~(gpv.date)', 'YYYY-MM-DD')
+	WHERE terms."NAME" LIKE '%-%'
+		AND terms.SCHOOLID = ~(curschoolid)
+		AND TO_DATE('~(gpv.date)', 'YYYY-MM-DD') BETWEEN terms.FIRSTDAY AND terms.LASTDAY
+	ORDER BY CALENDAR_DAY.DATE_VALUE
+)
+, cal AS (
+	SELECT date_list.cal_date
+		, date_list.date_value
+		, date_list.day_number
+		, SUM( CASE WHEN days_before.date_value IS NOT NULL THEN 1 ELSE 0 END ) Days_Before
+		, ROUND(SUM( CASE WHEN days_before.date_value IS NOT NULL THEN 1 ELSE 0 END ) / ( SELECT COUNT(*) total FROM date_list )*100) percent_before
+		, ( SELECT COUNT(*) total FROM date_list ) - SUM( CASE WHEN days_before.date_value IS NOT NULL THEN 1 ELSE 0 END ) Days_After
+		, ROUND(((( SELECT COUNT(*) total FROM date_list ) - SUM( CASE WHEN days_before.date_value IS NOT NULL THEN 1 ELSE 0 END )) / ( SELECT COUNT(*) total FROM date_list )*100)) percent_after
+	
+	FROM date_list
+		LEFT JOIN date_list days_before ON days_before.date_value <= date_list.date_value
+	
+		
+	
+	GROUP BY date_list.cal_date
+		, date_list.date_value
+		, date_list.day_number
+	
+	
+	ORDER BY date_list.date_value
+)
+SELECT COALESCE(
+		JSON_ARRAYAGG(
+			JSON_OBJECT(* RETURNING CLOB) ORDER BY DAY_NUMBER
+		RETURNING CLOB)
+	, TO_CLOB(CHR(91) || CHR(93)) ) json_obj
+	
+FROM (
+	SELECT *
+	
+	FROM cal
+) foo
+]~(json_obj)[/tlist_sql]
