@@ -15,7 +15,7 @@ WITH date_list AS (
 )
 , cal AS (
 	SELECT date_list.cal_date
-		, date_list.date_value
+		, TO_CHAR( date_list.date_value, 'YYYY-MM-DD' ) date_value
 		, date_list.day_number
 	FROM date_list
 		LEFT JOIN date_list days_before ON days_before.date_value <= date_list.date_value	
