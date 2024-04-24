@@ -2,7 +2,7 @@
 <script>
   import { onMount } from 'svelte'
   import md5 from 'md5'
-  import devSections from '../assets/sections.json'
+  import devSections from '../data/sections.json'
 
   // Determine the environment (production or development)
   const isProduction = !import.meta.env.DEV;

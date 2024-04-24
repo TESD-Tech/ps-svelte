@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<!-- non framed -->
+
+<head>
+  <title>TE Tech - Testing Calendar</title>
+  <link href="/images/css/screen.css" rel="stylesheet" media="screen">
+  <link href="/images/css/print.css" rel="stylesheet" media="print">
+  ~[wc:commonscripts]
+
+  <script type="module" src="/admin/ps-svelte/components/TestingCalendar.js"></script>
+</head>
+
+<body>
+  ~[wc:admin_header_css]
+  <!-- breadcrumb start -->
+  <a href="/admin/home.html" target="_top">Start Page</a> &gt; <a href="/admin/ui_examples/home.html" target="_top">UI
+    Examples</a> &gt; Admin Pages
+  <!-- breadcrumb end -->
+
+  ~[wc:admin_navigation_css]
+
+  <div class="testing-calendar">
+    <ps-svelte-testing-calendar />
+  </div>
+
+  ~[wc:admin_footer_css]
+  </body>
+  
+  </html>

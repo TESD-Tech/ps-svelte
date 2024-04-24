@@ -1,6 +1,9 @@
+<svelte:options customElement="ps-svelte-testing-calendar" />
 <script>
   import { writable } from 'svelte/store';
-  import testing_calendar from '../assets/testing_calendar_days.json';
+  import testing_calendar from '../data/testing_calendar_days.json';
+
+  const isProduction = !import.meta.env.DEV;
 
   // Stores for data, loading state, and error
   const data = writable([]);
@@ -9,7 +12,7 @@
 
   // Get date and report name from query string or default values
   const urlParams = new URLSearchParams(window.location.search);
-  let date = urlParams.get('date') ?? new Date().toISOString().split('T')[0];
+  let date = urlParams.get('date');
   let report = urlParams.get('report') ?? 'No Report Specified';
 
   // Function to fetch data
@@ -17,55 +20,120 @@
     loading.set(true);
     error.set(null);
     try {
-      const response = await fetch(`/admin/te-tech/ps-pennsylvania/testing_calendar.js?date=${date}&report=${report}`);
+      if (!isProduction) {
+        // Use local data in development
+        data.set(testing_calendar);
+        return;
+      }
+      const response = await fetch(`/admin/te-tech/ps-pennsylvania/testing_calendar.js?date=<span class="math-inline">\{date\}&report\=</span>{report}`);
       const newData = await response.json();
+
       data.set(newData);
     } catch (err) {
       error.set(err);
       data.set([]); // Reset data on error
     } finally {
+      // // Filter data based on date
+      // // Add percentage before and after
+      // data.update((value) => {
+      //   value.filter((item) => new Date(item.CAL_DATE) <= new Date(date))
+
+      //   value.forEach((item, index) => {
+      //     item.PERCENT_BEFORE = Math.round(parseFloat(((index + 1) / value.length * 100).toFixed(2));
+      //     item.PERCENT_AFTER = ((value.length - index) / value.length * 100).toFixed(2);
+      //   });
+      //   return value;
+      // });
+
       loading.set(false);
     }
   }
 
   // Initial data fetch
-  fetchData(); 
+  fetchData();
+
+  // Define a filtered data store based on the date
+  let filteredData = writable([]);
+  filteredData.subscribe((value) => {
+    console.log(value); // Log the new
+    return value
+  }); // Subscribe to update on changes
+
+  // Function to filter data based on date
+  function filterDataByDate(data, targetDate) {
+    let nextDay = new Date(targetDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+
+    filteredData.set(data.filter((item) => new Date(item.CAL_DATE) < nextDay));
+
+    // Add percentage before and after
+    filteredData.update((value) => {
+      value.forEach((item, index) => {
+        item.PERCENT_BEFORE = Math.round(((index) / value.length * 100));
+        item.PERCENT_AFTER = Math.round((value.length - (index + 1)) / value.length * 100);
+
+        console.log(index, value.length, item.PERCENT_BEFORE, item.PERCENT_AFTER  )
+        if (index === value.length - 1) {
+          item.PERCENT_BEFORE = 100;
+        }
+      });
+      return value;
+    });
+  }
+
+  // Call filter function on data change
+  data.subscribe((value) => filterDataByDate(value, date));
+
+  function formatDate(dateString) {
+    const [year, month, day] = dateString.split('-');
+    return `${month.padStart(2, '0')}/${day.padStart(2, '0')}/${year}`;
+  }
+
 </script>
 
-<div id="report">
+<div class="container mx-auto p-4 report">
   {#if $loading}
-    <p>Loading data...</p>
+    <p class="text-center text-gray-500">Loading data...</p>
   {:else if $error}
-    <p>Error: {$error.message}</p>
-  {:else if $data.length > 0}
-    <h1>Testing Calendar - {report}</h1>
-    <table id="calendar" class="table-auto border border-slate-950">
-      <thead class="bg-gray-50">
+    <p class="text-center text-red-500">Error: {$error.message}</p>
+  {:else if $filteredData.length > 0}
+    <h1 class="text-2xl font-bold mb-4">Testing Calendar<br>{report} (Beginning {formatDate(date)})</h1>
+    <table class="table-auto border-collapse border border-gray-400">
+      <thead>
         <tr>
-          <th class="sticky top-0 bg-white">Cal Date</th>
-          <th class="sticky top-0 bg-white">Day Number</th>
-          <th class="sticky top-0 bg-white">% Before</th>
-          <th class="sticky top-0 bg-white">% After</th>
+          <th class="sticky top-0 px-4 py-2 bg-gray-100 border border-gray-950">Cal Date</th>
+          <th class="sticky top-0 px-4 py-2 bg-gray-100 border border-gray-950">Day Number</th>
+          <th class="sticky top-0 px-4 py-2 bg-gray-100 border border-gray-950">% Before</th>
+          <th class="sticky top-0 px-4 py-2 bg-gray-100 border border-gray-950">% After</th>
         </tr>
       </thead>
       <tbody>
-        {#each $data as item}
+        {#each $filteredData as item}
+          
           <tr>
-            <td class="text-center">{item.CAL_DATE}</td>
-            <td class="text-center">{item.DAY_NUMBER}</td>
-            <td class="text-center">{item.PERCENT_BEFORE}</td>
-            <td class="text-center">{item.PERCENT_AFTER}</td>
+            <td class="px-4 py-2 border border-gray-950 text-center">{item.CAL_DATE}</td>
+            <td class="px-4 py-2 border border-gray-950 text-center">{item.DAY_NUMBER}</td>
+            <td class="px-4 py-2 border border-gray-950 text-center">{item.PERCENT_BEFORE}</td>
+            <td class="px-4 py-2 border border-gray-950 text-center">{item.PERCENT_AFTER}</td>
           </tr>
         {/each}
       </tbody>
     </table>
   {:else}
-    <p>No data available for the selected date and report.</p>
+    <p class="text-center text-gray-500">No data available for the selected date and report.</p>
   {/if}
 </div>
 
 <style>
   #report {
     font-family: Arial, Helvetica, sans-serif;
+  }
+
+  th, td {
+    border: 1px solid;
+  }
+
+  tr:hover {
+    @apply bg-gray-200 font-semibold transition duration-300 ease-in-out;
   }
 </style>

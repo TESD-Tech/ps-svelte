@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>~[text]psx.html.teachers.home.powerteacher[/text]</title>
+  ~[wc:commonscripts]
+
+  <script
+    language="javascript">function formHandler(newLoc) { var URL = newLoc.options[newLoc.selectedIndex].value; window.location.href = URL; } </script>
+  <link href="/images/css/screen.css" rel="stylesheet" media="screen">
+  <link href="/images/css/print.css" rel="stylesheet" media="print">
+
+  <script type="module" src="/admin/ps-svelte/components/TestingCalendar.js"></script>
+</head>
+
+<body>
+
+  ~[wc:teachers_header_css]
+
+  ~[wc:teachers_navigation_css]
+  ~[SetPostValue:tabname=home]
+  ~[wc:teachers_nav_css]
+
+  <div class="testing-calendar">
+    <ps-svelte-testing-calendar />
+  </div>
+
+  ~[wc:teachers_footer_css]
+  
+  </body>
+  
+  </html>
