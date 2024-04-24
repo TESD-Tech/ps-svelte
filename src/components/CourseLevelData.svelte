@@ -28,7 +28,7 @@
   function showCourseDetails(course, ethnicity) {
     // Aggregate student data for the selected course and ethnicity
     course.classes = course.students.reduce((acc, student) => {
-      acc[student.COURSE_NAME] ??= { ...ethicalities.reduce((acc, e) => ({ ...acc, [e]: 0 }), {}), TOTAL_STUDENTS: 0 };
+      acc[student.COURSE_NAME] ??= { ...ethicalities.reduce((acc, e) => ({ ...acc, [e]: 0 }), {}), TOTAL_STUDENTS: 0, COURSE_NAME: student.COURSE_NAME, GRADE_LEVEL: student.DISPLAY_GRADE};
       acc[student.COURSE_NAME][student.ETHNICITY] += 1;
       acc[student.COURSE_NAME].TOTAL_STUDENTS += 1;
       
@@ -176,19 +176,21 @@
         <table>
           <thead>
             <tr>
-              <th>Course Name</th>
-              <th>Grade</th>
+              <th>Course</th>
               <th>Total</th>
             </tr>
           </thead>
           <tbody>
             {#each Object.values(selectedCourse.classes) as course}
               <tr>
-                <td>{JSON.stringify(course)}</td>
-                <td>{course.DISPLAY_GRADE}</td>
-                <td>{course.TOTAL_STUDENTS}</td>
+                <td class="text-right">{course.COURSE_NAME}, {course.GRADE_LEVEL}</td>
+                <td class="text-left">{course.TOTAL_STUDENTS}</td>
               </tr>
             {/each}
+            <tr>
+              <td>&nbsp;</td>
+              <td class="text-xl font-bold text-center">Total: {getEnrollments(selectedCourse)}</td>
+            </tr>
           </tbody>
         </table>
       {/if}

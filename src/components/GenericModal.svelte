@@ -41,7 +41,7 @@
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    max-width: 80%;
   }
 
   .modal-header {
