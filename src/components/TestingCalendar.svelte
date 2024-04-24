@@ -12,8 +12,8 @@
 
   // Get date and report name from query string or default values
   const urlParams = new URLSearchParams(window.location.search);
-  let date = urlParams.get('date');
-  let report = urlParams.get('report') ?? 'No Report Specified';
+  let date = urlParams.get('date') ?? new Date('2099-01-01').toISOString().split('T')[0];
+  let report = urlParams.get('report') ?? '';
 
   // Function to fetch data
   async function fetchData() {
@@ -25,7 +25,7 @@
         data.set(testing_calendar);
         return;
       }
-      const response = await fetch(`/admin/te-tech/ps-pennsylvania/testing_calendar.js?date=<span class="math-inline">\{date\}&report\=</span>{report}`);
+      const response = await fetch(`/admin/ps-svelte/json/testing_calendar_days.json`);
       const newData = await response.json();
 
       data.set(newData);
@@ -33,18 +33,6 @@
       error.set(err);
       data.set([]); // Reset data on error
     } finally {
-      // // Filter data based on date
-      // // Add percentage before and after
-      // data.update((value) => {
-      //   value.filter((item) => new Date(item.CAL_DATE) <= new Date(date))
-
-      //   value.forEach((item, index) => {
-      //     item.PERCENT_BEFORE = Math.round(parseFloat(((index + 1) / value.length * 100).toFixed(2));
-      //     item.PERCENT_AFTER = ((value.length - index) / value.length * 100).toFixed(2);
-      //   });
-      //   return value;
-      // });
-
       loading.set(false);
     }
   }
@@ -55,7 +43,6 @@
   // Define a filtered data store based on the date
   let filteredData = writable([]);
   filteredData.subscribe((value) => {
-    console.log(value); // Log the new
     return value
   }); // Subscribe to update on changes
 
@@ -72,7 +59,6 @@
         item.PERCENT_BEFORE = Math.round(((index) / value.length * 100));
         item.PERCENT_AFTER = Math.round((value.length - (index + 1)) / value.length * 100);
 
-        console.log(index, value.length, item.PERCENT_BEFORE, item.PERCENT_AFTER  )
         if (index === value.length - 1) {
           item.PERCENT_BEFORE = 100;
         }
@@ -97,7 +83,7 @@
   {:else if $error}
     <p class="text-center text-red-500">Error: {$error.message}</p>
   {:else if $filteredData.length > 0}
-    <h1 class="text-2xl font-bold mb-4">Testing Calendar<br>{report} (Beginning {formatDate(date)})</h1>
+    <h1 class="text-2xl font-bold mb-4">Testing Calendar<br>{report}</h1>
     <table class="table-auto border-collapse border border-gray-400">
       <thead>
         <tr>

@@ -6,6 +6,7 @@
   <title>TE Tech - Testing Calendar</title>
   <link href="/images/css/screen.css" rel="stylesheet" media="screen">
   <link href="/images/css/print.css" rel="stylesheet" media="print">
+  <script src="/scripts/tlistCustomization.js"></script>
   ~[wc:commonscripts]
 </head>
 
@@ -17,8 +18,15 @@
   <!-- breadcrumb end -->
 
   ~[wc:admin_navigation_css]
-
   
+  <div id="box-round">
+    <form action="">
+      ~[tlist_standalone:U_TE_TESTING_CALENDAR.U_TE_TESTING_CALENDAR;displaycols:NAME,START_DATE,TEST_LEVEL,NOTES,ACTIVE;fieldNames:Name,Start Date,Test Level,Notes (Visible to Teachers),Active;type:html]
+      <div class="button-row">
+        <input type="hidden" name="ac" value="prim">~[submitbutton]
+      </div>
+    </form>
+  </div>
 
   ~[wc:admin_footer_css]
 </body>
