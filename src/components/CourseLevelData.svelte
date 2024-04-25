@@ -89,10 +89,10 @@
   }
 
   // Function to sort the data array by school and then by SORT_ORDER
-  function sortData(dataToSort, sortBy = 'SORT_ORDER') {
+  function sortData(dataToSort) {
     return Object.values(dataToSort).sort((a, b) => {
-      if (a.SORT_ORDER.slice(0,4) < b.SORT_ORDER.slice(0,4)) return -1;
-      if (a.SORT_ORDER.slice(0,4) > b.SORT_ORDER.slice(0,4)) return 1;
+      if (a.SORT_ORDER.slice(-4) < b.SORT_ORDER.slice(-4)) return -1;
+      if (a.SORT_ORDER.slice(-4) > b.SORT_ORDER.slice(-4)) return 1;
       if (a.SORT_ORDER < b.SORT_ORDER) return -1;
       if (a.SORT_ORDER > b.SORT_ORDER) return 1;
       return 0;
@@ -117,27 +117,11 @@
 
     data = formatData(groupedData);
     data = sortData(data);
-    data = insertGradeLevelData(data);
+    // data = insertGradeLevelData(data);
 
-    courses = sortData(formatData(courses), 'SORT_ORDER');
-
-    console.log(data);
+    courses = sortData(formatData(courses));
 
     // tasteTheRainbow();
-  }
-
-  // Function to insert grade level data into the data array
-  let last_deptartment_and_grade = '';
-  function insertGradeLevelData(data) {
-    // Iterate over data and insert grade level data when DISPLAY_GRADE changes
-    data.forEach((d, i) => {
-      if (d.SCHED_DEPARTMENT + '-' + d.DISPLAY_GRADE !== last_deptartment_and_grade) {
-        last_deptartment_and_grade = d.SCHED_DEPARTMENT + '-' + d.DISPLAY_GRADE;
-        data.splice(i, 0, grade_level_lookup[d.DISPLAY_GRADE]);
-      }
-    });
-
-    return [...data];
   }
 
   // Function to get total enrollments for a course 
@@ -156,11 +140,29 @@
     });
   }
 
+  function filterData(school) {
+    let filteredData = data.filter(d => d.SCHOOL === school);
+    
+    let distinctGradeLevels = new Set(filteredData.map(item => item.DISPLAY_GRADE)).size;
+    let distinctSchedDepartments = new Set(filteredData.map(item => item.SCHED_DEPARTMENT)).size;
+
+    return {
+      data: filteredData,
+      distinctGradeLevels: distinctGradeLevels,
+      distinctSchedDepartments: distinctSchedDepartments
+    };
+  }
+
+  function ethnicPercentageByGradeLevel(course, ethnicity) {
+    console.log(course, ethnicity)
+    return
+  }
+
   onMount(async () => {
     await updateData();
   });
 
-  $: schools = [...new Set(data.map(d => d.SCHOOL))];
+  $: schools = [...new Set(['High School', 'Middle School', 'Elementary School'])];
   $: {
     (async () => {
       await updateData(asOfDate);
@@ -196,13 +198,11 @@
       {/if}
     </div>
   </GenericModal>
-  <h2>Distrtictwide Course Level Data</h2>
   <div class="pb-4">
     <label for="asOfDate">As of: </label>
     <input type="date" bind:value={asOfDate} id="asOfDate">
   </div>
   <div id="tables" class="grid grid-flow-col gap-6 border-collapse grid-cols-1 grid-rows-5">
-
     {#each schools as school}
       <table class="table">
         <thead>
@@ -218,13 +218,22 @@
           </tr>
         </thead>
         <tbody>
-          {#each data.filter(d => d.SCHOOL === school) as course, index}
-            <tr>
-              {#if index === 0}
-                <td class="rotate" rowspan={data.filter(d => d.SCHOOL === school).length}>{school}</td>
+          {#each filterData(school).data as course, index}
+            
+               {#if index === 0 || ((course.SCHED_DEPARTMENT !== filterData(school).data[index - 1].SCHED_DEPARTMENT || course.DISPLAY_GRADE !== filterData(school).data[index - 1].DISPLAY_GRADE) && index != 0)}
+                <tr>
+                  {#if index === 0}
+                  <td class="rotate" rowspan={data.filter(d => d.SCHOOL === school).length + filterData(school).distinctGradeLevels + filterData(school).distinctSchedDepartments}>{school}</td>
+                  {/if}
+                  <td class="bg-gray-400">&nbsp;</td>
+                  <td class="text-center bg-gray-400">{course.DISPLAY_GRADE}</td> 
+
+                  {#each ethicalities as e}
+                    <td class="text-center bg-gray-400" colspan=2>{e}: {Math.round(grade_level_lookup[course.DISPLAY_GRADE][e] / grade_level_lookup[course.DISPLAY_GRADE].TOTAL_STUDENTS * 100)}%</td>
+                  {/each}
+                </tr>
               {/if}
-              
-              {#if course.DISPLAY_NAME}
+              <tr>
                 <td class="text-center">{course.DISPLAY_NAME}</td>
                 <td on:click={() => showCourseDetails(course)} class="text-center hover:cursor-pointer" style="animation-delay: {index * 0.1}s">{getEnrollments(course)}</td>
 
@@ -232,39 +241,41 @@
                   <td class="text-center" style="animation-delay: {index * 0.1}s">{course[e]}</td>
                   <td class="text-center" style="animation-delay: {index * 0.1}s">{Math.round(course[e] / getEnrollments(course) * 100)}%</td>
                 {/each}
-              {:else}
-              <td class="bg-gray-400">&nbsp;</td>
-              <td class="text-center bg-gray-400">{course.DISPLAY_GRADE}</td> 
-
-              {#each ethicalities as e}
-                <td class="text-center bg-gray-400" colspan=2>{e}: {Math.round(course[e] / course.TOTAL_STUDENTS * 100)}%</td>
-              {/each}
-
-              {/if}
-            </tr>
+              </tr>
           {/each}
         </tbody>
       </table>
     {/each}
-  
+    
     <div class="grid grid-cols-2">
       <div>
-        <div class="grid grid-cols-2 border border-gray-400">
-          <h4 class="col-span-2 text-center">Key</h4>
-          <div>A: Asian</div>
-          <div>M: Multiracial</div>
-          <div>B: Black or African American</div>
-          <div>W: White</div>
-          <div>H: Hispanic/Latino</div>
+        <div class="border border-black p-2">
+          <h4 class="text-center font-bold">Key</h4>
+          <div class="grid grid-cols-2 gap-2">
+            <div>A: Asian</div>
+            <div>M: Multiracial</div>
+            <div>B: Black or African American</div>
+            <div>W: White</div>
+            <div>H: Hispanic/Latino</div>
+          </div>
         </div>
       </div>
+
       <div>
-        <div class="grid grid-cols-2 border border-gray-400">
-          <h4 class="col-span-2 text-center">CHS Levels</h4>
-          <div class="border-2 border-indigo-500">AP: Advanced Placement</div>
-          <div>X: Accelerated</div>
-          <div>H: Honors</div>
-          <div>A: Academic</div>
+        <div class="border border-black p-2">
+          <h4 class="text-center font-bold">CHS Levels</h4>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="border-2 border-indigo-500">AP: Advanced Placement</div>
+            <div>X: Accelerated</div>
+            <div>H: Honors</div>
+            <div>A: Academic</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-span-2">
+        <div class="border border-black p-2">
+          <div>Gray Lines: Actual population distribution of school or grade</div>
         </div>
       </div>
     </div>

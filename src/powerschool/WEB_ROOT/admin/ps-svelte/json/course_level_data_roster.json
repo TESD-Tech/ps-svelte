@@ -15,6 +15,7 @@ WITH filtered_students AS (
 		AND students.LAST_NAME != 'Tester'
 		AND students.LAST_NAME NOT LIKE 'DUP-%'
 		AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
+-- 		AND TO_DATE( '2024-02-15', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
 		
 -- 		AND students.GRADE_LEVEL = 5
 -- 		AND students.schoolid IN (3323, 3327)
@@ -37,7 +38,8 @@ WITH filtered_students AS (
 		INNER JOIN REENROLLMENTS ON REENROLLMENTS.STUDENTID = students.id
 			AND REENROLLMENTS.SCHOOLID BETWEEN 2000 AND 5000
 			AND REENROLLMENTS.GRADE_LEVEL > 1
-			AND TO_DATE( '~(asOfDate)', 'YYYY-MM-DD' ) BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
+ 			AND TO_DATE( '~(asOfDate)', 'YYYY-MM-DD' ) BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
+--			AND TO_DATE( '2024-02-15', 'YYYY-MM-DD' )BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
 	WHERE students.LAST_NAME != 'Tester'
 		AND students.LAST_NAME NOT LIKE 'DUP-%'
 
@@ -102,8 +104,6 @@ WITH filtered_students AS (
 		, filtered_students.student_number
 		, MAX(filtered_students.ETHNICITY) ETHNICITY
 		
-		, CASE WHEN filtered_students.GRADE_LEVEL IN ( '9', '10', '11', '12') THEN 'Grades 9-12'
-			ELSE 'Grade ' || filtered_students.GRADE_LEVEL END DISPLAY_GRADE
 	FROM cc 
 	 
 		INNER JOIN filtered_students ON filtered_students.id = cc.STUDENTID
@@ -116,7 +116,10 @@ WITH filtered_students AS (
 			)
 			
 		)
-	WHERE TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
+ 	WHERE TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
+--	WHERE TO_DATE( '2024-02-14', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
+-- 		AND cc.schoolid IN (3323, 3327)
+-- 	AND cc.COURSE_NUMBER = 'M0287'
 		
 	GROUP BY cc.COURSE_NUMBER
 		, courses.course_name
@@ -126,7 +129,6 @@ WITH filtered_students AS (
 		, filtered_students.GRADE_LEVEL
 
 )
-
 SELECT JSON_ARRAYAGG(
 			JSON_OBJECT( * )
 			ORDER BY sort_order
@@ -136,12 +138,17 @@ SELECT JSON_ARRAYAGG(
 FROM (
 
 SELECT rosters.*
-	, schoolid
+	, CASE WHEN schoolid = 2080 THEN 'Grades 9-12'
+					ELSE 'Grade ' || SUBSTR(DISPLAY_NAME, LENGTH(DISPLAY_NAME), 1) END DISPLAY_GRADE
+	, school
 		 || '-' || department_sort
-		 || '-' || DISPLAY_GRADE
-		 || '-' || DISPLAY_NAME sort_order
+		 || '-' || CASE WHEN schoolid = 2080 THEN 'Grades 9-12'
+					ELSE 'Grade ' || SUBSTR(DISPLAY_NAME, LENGTH(DISPLAY_NAME), 1) END
+		 || '-' || DISPLAY_NAME
+		 || '-' || schoolid sort_order
+		 
 
 FROM rosters
-
+ORDER BY schoolid, SORT_ORDER
 	
-) foo]~(json_obj)[/tlist_sql]
+) foo;]~(json_obj)[/tlist_sql]
