@@ -5,9 +5,10 @@ WITH filtered_students AS (
 		, id
 		, GRADE_LEVEL
 		, students.schoolid
-		, students.ETHNICITY
 		, students.ENTRYDATE
 		, students.EXITDATE
+		, students.ethnicity
+		, students.FEDETHNICITY
 		, CASE WHEN students.GRADE_LEVEL IN ( '9', '10', '11', '12') THEN 'Grades 9-12'
 			ELSE 'Grade ' || students.GRADE_LEVEL END DISPLAY_GRADE
 		, CASE WHEN students.schoolid = 2080 THEN 'High School'
@@ -20,6 +21,7 @@ WITH filtered_students AS (
 		AND students.LAST_NAME != 'Tester'
 		AND students.LAST_NAME NOT LIKE 'DUP-%'
 		AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
+-- 		AND TO_DATE( '2022-11-11', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
 		
 -- 		AND students.GRADE_LEVEL = 5
 -- 		AND students.schoolid IN (3323, 3327)
@@ -34,9 +36,10 @@ WITH filtered_students AS (
 		, students.id
 		, REENROLLMENTS.GRADE_LEVEL
 		, REENROLLMENTS.schoolid
-		, students.ETHNICITY
 		, REENROLLMENTS.ENTRYDATE
 		, REENROLLMENTS.EXITDATE
+		, students.ethnicity
+		, students.FEDETHNICITY
 		, CASE WHEN REENROLLMENTS.GRADE_LEVEL IN ( '9', '10', '11', '12') THEN 'Grades 9-12'
 			ELSE 'Grade ' || REENROLLMENTS.GRADE_LEVEL END DISPLAY_GRADE
 		, CASE WHEN REENROLLMENTS.schoolid = 2080 THEN 'High School'
@@ -48,11 +51,21 @@ WITH filtered_students AS (
 			AND REENROLLMENTS.SCHOOLID BETWEEN 2000 AND 5000
 			AND REENROLLMENTS.GRADE_LEVEL > 1
 			AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
+-- 			AND TO_DATE( '2022-11-11', 'YYYY-MM-DD' ) BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
 	WHERE students.LAST_NAME != 'Tester'
 		AND students.LAST_NAME NOT LIKE 'DUP-%'
 
 )
-
+, normalized_ethnicity AS (
+	SELECT filtered_students.student_number
+		, CASE WHEN SUM( CASE WHEN STUDENTRACE.RACECD IS NOT NULL THEN 1 ELSE 0 END ) > 1 THEN 'M'
+			WHEN MAX(filtered_students.fedethnicity) = 1 THEN 'H'
+			WHEN MAX(COALESCE(STUDENTRACE.RACECD, 'U')) = 'U' THEN 'U'
+			ELSE MAX(STUDENTRACE.RACECD) END RACECD
+	FROM filtered_students
+		LEFT JOIN STUDENTRACE ON STUDENTRACE.STUDENTID = filtered_students.id
+	GROUP BY student_number
+)
 
 SELECT JSON_ARRAYAGG(
 			JSON_OBJECT( * )
@@ -61,9 +74,21 @@ SELECT JSON_ARRAYAGG(
 		
 FROM (
 
-SELECT *
+SELECT filtered_students.student_number
+		, filtered_students.dcid
+		, filtered_students.id
+		, filtered_students.GRADE_LEVEL
+		, filtered_students.schoolid
+		, filtered_students.ENTRYDATE
+		, filtered_students.EXITDATE
+		, CASE WHEN filtered_students.school = 'High School' THEN filtered_students.ethnicity
+			ELSE normalized_ethnicity.racecd END ethnicity 
+		, filtered_students.FEDETHNICITY
+		, filtered_students.DISPLAY_GRADE
+		, filtered_students.school
 
 FROM filtered_students
+	INNER JOIN normalized_ethnicity ON normalized_ethnicity.student_number = filtered_students.student_number
 
 	
-) foo]~(json_obj)[/tlist_sql]
+) foo;]~(json_obj)[/tlist_sql]

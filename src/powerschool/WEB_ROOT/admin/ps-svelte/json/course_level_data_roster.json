@@ -6,6 +6,7 @@ WITH filtered_students AS (
 		, GRADE_LEVEL
 		, students.schoolid
 		, students.ETHNICITY
+		, students.FEDETHNICITY
 		, students.ENTRYDATE
 		, students.EXITDATE
 
@@ -14,8 +15,8 @@ WITH filtered_students AS (
 		AND students.GRADE_LEVEL > 1
 		AND students.LAST_NAME != 'Tester'
 		AND students.LAST_NAME NOT LIKE 'DUP-%'
-		AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
--- 		AND TO_DATE( '2024-02-15', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
+ 		AND TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
+--		AND TO_DATE( '2022-11-11', 'YYYY-MM-DD' ) BETWEEN students.ENTRYDATE AND students.EXITDATE
 		
 -- 		AND students.GRADE_LEVEL = 5
 -- 		AND students.schoolid IN (3323, 3327)
@@ -31,6 +32,7 @@ WITH filtered_students AS (
 		, REENROLLMENTS.GRADE_LEVEL
 		, REENROLLMENTS.schoolid
 		, students.ETHNICITY
+		, students.FEDETHNICITY
 		, REENROLLMENTS.ENTRYDATE
 		, REENROLLMENTS.EXITDATE
 
@@ -39,10 +41,20 @@ WITH filtered_students AS (
 			AND REENROLLMENTS.SCHOOLID BETWEEN 2000 AND 5000
 			AND REENROLLMENTS.GRADE_LEVEL > 1
  			AND TO_DATE( '~(asOfDate)', 'YYYY-MM-DD' ) BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
---			AND TO_DATE( '2024-02-15', 'YYYY-MM-DD' )BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
+--			AND TO_DATE( '2022-11-11', 'YYYY-MM-DD' )BETWEEN REENROLLMENTS.ENTRYDATE AND REENROLLMENTS.EXITDATE
 	WHERE students.LAST_NAME != 'Tester'
 		AND students.LAST_NAME NOT LIKE 'DUP-%'
 
+)
+, normalized_ethnicity AS (
+	SELECT filtered_students.student_number
+		, CASE WHEN SUM( CASE WHEN STUDENTRACE.RACECD IS NOT NULL THEN 1 ELSE 0 END ) > 1 THEN 'M'
+			WHEN MAX(filtered_students.fedethnicity) = 1 THEN 'H'
+			WHEN MAX(COALESCE(STUDENTRACE.RACECD, 'U')) = 'U' THEN 'U'
+			ELSE MAX(STUDENTRACE.RACECD) END RACECD
+	FROM filtered_students
+		LEFT JOIN STUDENTRACE ON STUDENTRACE.STUDENTID = filtered_students.id
+	GROUP BY student_number
 )
 , rosters AS (
 	SELECT 
@@ -102,11 +114,13 @@ WITH filtered_students AS (
 				ELSE 5 END department_sort
 
 		, filtered_students.student_number
-		, MAX(filtered_students.ETHNICITY) ETHNICITY
+		, CASE WHEN MAX(filtered_students.schoolid) = 2080 THEN MAX(filtered_students.ethnicity)
+			ELSE MAX(normalized_ethnicity.racecd) END ETHNICITY
 		
 	FROM cc 
 	 
 		INNER JOIN filtered_students ON filtered_students.id = cc.STUDENTID
+		INNER JOIN normalized_ethnicity ON normalized_ethnicity.student_number = filtered_students.student_number
  		INNER JOIN courses ON courses.COURSE_NUMBER = cc.COURSE_NUMBER
  			AND (
 					( courses.SCHED_DEPARTMENT IN ('MA', 'SC', 'EN', 'SS') AND courses.SCHOOLID = 2080 )
@@ -116,8 +130,8 @@ WITH filtered_students AS (
 			)
 			
 		)
- 	WHERE TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
---	WHERE TO_DATE( '2024-02-14', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
+	WHERE TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
+-- 	WHERE TO_DATE( '2024-02-14', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
 -- 		AND cc.schoolid IN (3323, 3327)
 -- 	AND cc.COURSE_NUMBER = 'M0287'
 		
@@ -149,6 +163,9 @@ SELECT rosters.*
 		 
 
 FROM rosters
+
+
 ORDER BY schoolid, SORT_ORDER
+
 	
 ) foo;]~(json_obj)[/tlist_sql]
