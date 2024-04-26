@@ -7,5 +7,5 @@
 </script>
 
 <main>
-<TestingCalendar />
+<CareerReadiness />
 </main>
