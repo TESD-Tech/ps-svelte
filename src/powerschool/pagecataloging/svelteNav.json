@@ -3,7 +3,7 @@
     {
       "htmlID": "svelteNavCourseLevelData",
       "title": "Districtwide Course Level Data",
-      "version": "24.4.88",
+      "version": "24.4.97",
       "sortOrder": 200,
       "pageURL": "/admin/ps-svelte/course_level_data.html",
       "parentHTMLID": "navDataAndReportingSchoolReports"
@@ -11,7 +11,7 @@
     {
       "htmlID": "svelteNavTestingCalendar",
       "title": "TESD Testing Calendar",
-      "version": "24.4.88",
+      "version": "24.4.97",
       "sortOrder": 200,
       "pageURL": "/admin/ps-svelte/testing_calendar.html",
       "parentHTMLID": "navDataAndReportingSchoolReports"
@@ -19,7 +19,7 @@
     {
       "htmlID": "svelteNavTestingCalendarAdminDistrict",
       "title": "TESD Testing Calendar Administration",
-      "version": "24.4.88",
+      "version": "24.4.97",
       "sortOrder": 200,
       "pageURL": "/admin/ps-svelte/testing_calendar_admin.html",
       "parentHTMLID": "navDistrictManagementDistrictSetup"
@@ -27,7 +27,7 @@
     {
       "htmlID": "svelteNavTestingCalendarAdminSchool",
       "title": "TESD Testing Calendar Administration",
-      "version": "24.4.88",
+      "version": "24.4.97",
       "sortOrder": 200,
       "pageURL": "/admin/ps-svelte/testing_calendar_admin.html",
       "parentHTMLID": "navSchoolManagementSchoolParameters"
@@ -35,7 +35,7 @@
     {
       "htmlID": "svelteNavCareerReadiness",
       "title": "TESD Career Readiness Indicator Monitoring",
-      "version": "24.4.88",
+      "version": "24.4.97",
       "sortOrder": 200,
       "pageURL": "/admin/ps-svelte/career_readiness.html",
       "parentHTMLID": "navDataAndReportingSchoolReports"

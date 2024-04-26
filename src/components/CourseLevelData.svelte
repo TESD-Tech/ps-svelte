@@ -314,9 +314,4 @@
     85% { background-color: #DABAFF; opacity: .9; } /* Light Violet */
     100% { background-color: #FFB3BA; opacity: 1; } /* Light Red */
   }
-
-  .pulse {
-    animation: pulse .26s ease-out;
-  }
-
 </style>

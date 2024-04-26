@@ -162,15 +162,7 @@
 
   @media print {
     .noprint {
-      display: none;
-    }
-
-    #btnNoNav {
-      display: none;
-    }
-
-    #pds-header {
-      display: none;
+      display: none !important;
     }
   }
 </style>

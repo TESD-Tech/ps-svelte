@@ -14,7 +14,7 @@
   <div class="modal-content rounded-lg">
     <div class="modal-header flex">
       <h2>{title}</h2>
-      <span on:click={close} class="hover:font-bold hover:cursor-pointer">X</span>
+      <span on:click={close} class="hover:font-bold hover:cursor-pointer" role="button" tabindex="0" on:keydown={console.log('Woo!')}>X</span>
     </div>
     <div class="modal-body">
       <slot name="body"></slot>

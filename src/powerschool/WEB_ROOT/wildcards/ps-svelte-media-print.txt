@@ -1,0 +1,31 @@
+<style>
+  @media print {
+    .noprint {
+      display: none !important;
+    }
+
+    #btnNoNav {
+      display: none !important;
+    }
+
+    #pds-header {
+      display: none !important;
+    }
+
+    .pds-app-header-bar-center {
+      display: none !important;
+    }
+
+    .pds-app-actions {
+      display: none !important;
+    }
+
+    #breadcrumbs {
+      display: none !important;
+    }
+
+    .pds-icon {
+      display: none !important;
+    }
+  }
+</style>
