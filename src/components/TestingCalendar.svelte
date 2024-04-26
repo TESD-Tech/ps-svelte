@@ -103,13 +103,14 @@
 </script>
 
 <div class="container mx-auto p-4 report">
-  <div class="flex justify-between items-center">
-    <select class="p-2 border border-gray-400 rounded" on:change={updateSelectedTest}>
+  <div class="noprint">
+    <select class="p-2 mb-6 border border-gray-400 rounded" on:change={updateSelectedTest}>
       <option value="">Select a test</option>
       {#each $tests as test}
         <option startdate='{test.START_DATE}' value={test.NAME}>{test.NAME} - {formatDate(test.START_DATE)} {test.TEST_LEVEL || ''}</option>
       {/each}
     </select>
+    <button class="p-2 mx-4 bg-blue-500 text-white rounded" onclick="window.print()">Print</button>
   </div>
   {#if selectedTest}
     {#if $loading}
@@ -117,9 +118,11 @@
     {:else if $error}
       <p class="text-center text-red-500">Error: {$error.message}</p>
     {:else if $filteredData.length > 0}
-      <h1 class="text-2xl font-bold mb-4">{report}</h1>
-      <table class="table-auto border-collapse border border-gray-400">
+      <table id="calendar" class="table-auto border-collapse border border-gray-400">
         <thead>
+          <tr>
+            <th class="text-2xl font-bold mb-4 px-4 py-2" colspan=4>{report}</th>
+          </tr>
           <tr>
             <th class="sticky top-0 px-4 py-2 bg-gray-100 border border-gray-950">Cal Date</th>
             <th class="sticky top-0 px-4 py-2 bg-gray-100 border border-gray-950">Day Number</th>
@@ -129,7 +132,6 @@
         </thead>
         <tbody>
           {#each $filteredData as item}
-            
             <tr>
               <td class="px-4 py-2 border border-gray-950 text-center">{item.CAL_DATE}</td>
               <td class="px-4 py-2 border border-gray-950 text-center">{item.DAY_NUMBER}</td>
@@ -156,5 +158,19 @@
 
   tr:hover {
     @apply bg-gray-200 font-semibold transition duration-300 ease-in-out;
+  }
+
+  @media print {
+    .noprint {
+      display: none;
+    }
+
+    #btnNoNav {
+      display: none;
+    }
+
+    #pds-header {
+      display: none;
+    }
   }
 </style>
