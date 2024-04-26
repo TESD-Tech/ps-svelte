@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>TE Tech - Career Readiness Indicator Monitoring</title>
+  ~[wc:commonscripts]
+  ~[wc:admin_header_css]
+  <link href="/images/css/screen.css" rel="stylesheet" media="screen">
+  <link href="/images/css/print.css" rel="stylesheet" media="print">
+
+  <script type="module" src="/admin/ps-svelte/components/CareerReadiness.js"></script>
+
+  <style>
+    .course-level-data {
+      padding: 0 12px 0 12px;
+    }
+  </style>
+
+<body>
+  <!-- breadcrumb start -->
+  <a href="/admin/home.html" target="_top">Start Page</a> &gt; <a href="/admin/tech/" target="_top">System</a> &gt; TE Tech - Career Readiness Indicator Monitoring
+  <!-- breadcrumb end -->
+  ~[wc:admin_navigation_css]
+
+  <h1>TE Tech - Career Readiness Indicator Monitoring</h1>
+  <div class="career-readiness">
+    <ps-svelte-career-readiness />
+  </div>
+
+  ~[wc:admin_footer_css]
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+~[tlist_sql;
+SELECT JSON_ARRAYAGG(
+			JSON_OBJECT( * RETURNING CLOB) ORDER BY SCHED_YEAROFGRADUATION, STUDENT
+			RETURNING CLOB
+		) artifacts
+FROM (
+	SELECT dcid
+	    , LAST_NAME 
+	        || ', '
+	        || FIRST_NAME
+	        || CASE WHEN nickname IS NOT NULL THEN ' (' || NICKNAME || ')' ELSE '' END student
+	    , STUDENT_EMAIL
+	    , student_number
+	    , SCHED_YEAROFGRADUATION
+	    , JSON_ARRAYAGG(artifact) ARTIFACTS
+	FROM (
+	    SELECT students.dcid
+	        , students.LAST_NAME 
+	        , students.FIRST_NAME
+	        , U_DEF_EXT_STUDENTS.nickname
+	        , U_DEF_EXT_STUDENTS.STUDENT_EMAIL
+	        , students.student_number
+	        , students.SCHED_YEAROFGRADUATION
+	        , U_CAREER_READINESS.artifact
+	    FROM students
+	        LEFT JOIN U_DEF_EXT_STUDENTS ON U_DEF_EXT_STUDENTS.STUDENTSDCID = students.dcid
+	        INNER JOIN (
+	            SELECT studentsdcid
+	                , artifact
+	            FROM U_CAREER_READINESS
+	            UNPIVOT (
+	                artifact FOR artifact_name IN (
+	                    artifact_1, artifact_2, artifact_3, artifact_4, artifact_5,
+	                    artifact_6, artifact_7, artifact_8, artifact_9, artifact_10,
+	                    artifact_11, artifact_12, artifact_13, artifact_14, artifact_15,
+	                    artifact_16, artifact_17, artifact_18, artifact_19, artifact_20
+	                )
+	            )
+	        ) U_CAREER_READINESS ON U_CAREER_READINESS.studentsdcid = students.dcid
+	    WHERE students.ENROLL_STATUS = 0
+	        AND students.SCHOOLID = 2080
+	)
+	GROUP BY dcid, LAST_NAME, FIRST_NAME, nickname, STUDENT_EMAIL, student_number, SCHED_YEAROFGRADUATION
+) foo
+;]~(json_obj)[/tlist_sql]

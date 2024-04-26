@@ -38,4 +38,4 @@ FROM (
 	
 	FROM cal
 ) foo
-]~(json_obj)[/tlist_sql]
+;]~(json_obj)[/tlist_sql]

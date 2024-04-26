@@ -1,7 +1,7 @@
 {
   "name": "ps-svelte",
   "private": true,
-  "version": "24.4.83",
+  "version": "24.4.86",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@unocss/preset-wind": "^0.59.4",
-    "md5": "^2.3.0"
+    "file-saver": "^2.0.5",
+    "md5": "^2.3.0",
+    "xlsx": "^0.18.5"
   }
 }
