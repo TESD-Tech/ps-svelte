@@ -130,7 +130,12 @@ WITH filtered_students AS (
 			)
 			
 		)
-	WHERE TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
+		INNER JOIN terms ON cc.dateenrolled BETWEEN terms.FIRSTDAY AND terms.LASTDAY
+			AND terms.SCHOOLID = cc.SCHOOLID
+			AND terms.ABBREVIATION LIKE '%-%'
+			AND terms.id LIKE '~(curyearid)%'
+-- No date filter to capture HS semester courses
+--	WHERE TO_DATE( '~(gpv.asOfDate)', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
 -- 	WHERE TO_DATE( '2024-02-14', 'YYYY-MM-DD' ) BETWEEN cc.DATEENROLLED AND cc.DATELEFT
 -- 		AND cc.schoolid IN (3323, 3327)
 -- 	AND cc.COURSE_NUMBER = 'M0287'

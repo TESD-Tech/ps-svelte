@@ -7,5 +7,5 @@
 </script>
 
 <main>
-<CareerReadiness />
+<CourseLevelData />
 </main>

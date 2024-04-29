@@ -6,7 +6,7 @@
   import dev_student from '../data/course_level_data_student.json';
   import dev_roster from '../data/course_level_data_roster.json';
 
-  const ethicalities = ['A', 'B', 'H', 'M', 'W'];
+  const ethicalities = ['A', 'B', 'H', 'M', 'W', 'U'];
   let data = [];
   let grade_level_lookup = {};
   let courses = {};
@@ -46,6 +46,9 @@
 
   // Function to process student data and populate grade_level_lookup
   function processStudentData(students) {
+    // Re-init grade_level_lookup
+    grade_level_lookup = {}
+
     students.forEach(student => {
       if (student.DISPLAY_GRADE === 'Grade 13' || student.ETHNICITY === 'I') return;
       grade_level_lookup[student.DISPLAY_GRADE] ??= {
@@ -229,7 +232,11 @@
                   <td class="text-center bg-gray-400">{course.DISPLAY_GRADE}</td> 
 
                   {#each ethicalities as e}
-                    <td class="text-center bg-gray-400" colspan=2>{e}: {Math.round(grade_level_lookup[course.DISPLAY_GRADE][e] / grade_level_lookup[course.DISPLAY_GRADE].TOTAL_STUDENTS * 100)}%</td>
+                    <td class="text-center bg-gray-400" colspan=2>{e}: {Math.round(grade_level_lookup[course.DISPLAY_GRADE][e] / grade_level_lookup[course.DISPLAY_GRADE].TOTAL_STUDENTS * 100)}%
+                    
+                      ({grade_level_lookup[course.DISPLAY_GRADE][e]} / {grade_level_lookup[course.DISPLAY_GRADE].TOTAL_STUDENTS} * 100)
+                    
+                    </td>
                   {/each}
                 </tr>
               {/if}
@@ -280,6 +287,10 @@
       </div>
     </div>
   </div>
+
+  <pre>
+    {JSON.stringify(grade_level_lookup, null, 2)}
+  </pre>
 </div>
 
 
