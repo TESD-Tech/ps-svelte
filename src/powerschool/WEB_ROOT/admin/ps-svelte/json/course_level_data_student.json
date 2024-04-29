@@ -7,7 +7,7 @@ WITH filtered_students AS (
 		, students.schoolid
 		, students.ENTRYDATE
 		, students.EXITDATE
-		, students.ethnicity
+		, CASE WHEN students.ethnicity = 'U' THEN 'M' ELSE students.ethnicity END ethnicity
 		, students.FEDETHNICITY
 		, CASE WHEN students.GRADE_LEVEL IN ( '9', '10', '11', '12') THEN 'Grades 9-12'
 			ELSE 'Grade ' || students.GRADE_LEVEL END DISPLAY_GRADE
@@ -38,7 +38,7 @@ WITH filtered_students AS (
 		, REENROLLMENTS.schoolid
 		, REENROLLMENTS.ENTRYDATE
 		, REENROLLMENTS.EXITDATE
-		, students.ethnicity
+		, CASE WHEN students.ethnicity = 'U' THEN 'M' ELSE students.ethnicity END ethnicity
 		, students.FEDETHNICITY
 		, CASE WHEN REENROLLMENTS.GRADE_LEVEL IN ( '9', '10', '11', '12') THEN 'Grades 9-12'
 			ELSE 'Grade ' || REENROLLMENTS.GRADE_LEVEL END DISPLAY_GRADE
@@ -60,7 +60,7 @@ WITH filtered_students AS (
 	SELECT filtered_students.student_number
 		, CASE WHEN SUM( CASE WHEN STUDENTRACE.RACECD IS NOT NULL THEN 1 ELSE 0 END ) > 1 THEN 'M'
 			WHEN MAX(filtered_students.fedethnicity) = 1 THEN 'H'
-			WHEN MAX(COALESCE(STUDENTRACE.RACECD, 'U')) = 'U' THEN 'U'
+			WHEN MAX(COALESCE(STUDENTRACE.RACECD, 'U')) = 'U' THEN 'M'
 			ELSE MAX(STUDENTRACE.RACECD) END RACECD
 	FROM filtered_students
 		LEFT JOIN STUDENTRACE ON STUDENTRACE.STUDENTID = filtered_students.id
@@ -82,7 +82,10 @@ SELECT filtered_students.student_number
 		, filtered_students.ENTRYDATE
 		, filtered_students.EXITDATE
 		, CASE WHEN filtered_students.school = 'High School' THEN filtered_students.ethnicity
-			ELSE normalized_ethnicity.racecd END ethnicity 
+				ELSE 
+					CASE WHEN normalized_ethnicity.racecd = 'U' THEN 'M' 
+						ELSE normalized_ethnicity.racecd END
+				END ethnicity 
 		, filtered_students.FEDETHNICITY
 		, filtered_students.DISPLAY_GRADE
 		, filtered_students.school

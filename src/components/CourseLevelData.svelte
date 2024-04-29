@@ -6,7 +6,7 @@
   import dev_student from '../data/course_level_data_student.json';
   import dev_roster from '../data/course_level_data_roster.json';
 
-  const ethicalities = ['A', 'B', 'H', 'M', 'W', 'U'];
+  const ethicalities = ['A', 'B', 'H', 'M', 'W'];
   let data = [];
   let grade_level_lookup = {};
   let courses = {};
@@ -232,11 +232,7 @@
                   <td class="text-center bg-gray-400">{course.DISPLAY_GRADE}</td> 
 
                   {#each ethicalities as e}
-                    <td class="text-center bg-gray-400" colspan=2>{e}: {Math.round(grade_level_lookup[course.DISPLAY_GRADE][e] / grade_level_lookup[course.DISPLAY_GRADE].TOTAL_STUDENTS * 100)}%
-                    
-                      ({grade_level_lookup[course.DISPLAY_GRADE][e]} / {grade_level_lookup[course.DISPLAY_GRADE].TOTAL_STUDENTS} * 100)
-                    
-                    </td>
+                    <td class="text-center bg-gray-400" colspan=2>{e}: {Math.round(grade_level_lookup[course.DISPLAY_GRADE][e] / grade_level_lookup[course.DISPLAY_GRADE].TOTAL_STUDENTS * 100)}%</td>
                   {/each}
                 </tr>
               {/if}

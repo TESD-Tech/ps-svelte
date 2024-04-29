@@ -50,7 +50,7 @@ WITH filtered_students AS (
 	SELECT filtered_students.student_number
 		, CASE WHEN SUM( CASE WHEN STUDENTRACE.RACECD IS NOT NULL THEN 1 ELSE 0 END ) > 1 THEN 'M'
 			WHEN MAX(filtered_students.fedethnicity) = 1 THEN 'H'
-			WHEN MAX(COALESCE(STUDENTRACE.RACECD, 'U')) = 'U' THEN 'U'
+			WHEN MAX(COALESCE(STUDENTRACE.RACECD, 'U')) = 'U' THEN 'M'
 			ELSE MAX(STUDENTRACE.RACECD) END RACECD
 	FROM filtered_students
 		LEFT JOIN STUDENTRACE ON STUDENTRACE.STUDENTID = filtered_students.id
