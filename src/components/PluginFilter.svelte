@@ -3,7 +3,7 @@
 
   import dev_menu from '../data/ps_nav.json';
 
-  let menuJSON;
+  let menuJSON = null;
   let pluginNames = [];
   let pluginMap = {};
   let selectedPlugin = 'All'; // Default selection
@@ -13,7 +13,7 @@
   // Fetch menu data on mount
   onMount(async () => {
 
-    if (isProduction) {
+    if (!isProduction) {
       processJSON(dev_menu)
     } else {
       const response = await fetch('/ws/cpm/tree?maxDepth=100&path=%2F');
@@ -26,31 +26,33 @@
 
   // Process JSON data
   function processJSON(data) {
-  if (data.pages) {
-    data.pages.forEach(page => {
-      const pluginName = page.pluginName || "Other";
-      if (!pluginNames.includes(pluginName)) {
-        pluginNames.push(pluginName);
-        pluginMap[pluginName] = [];
-      }
-      pluginMap[pluginName].push(`${data.path}/${page.text}`);
-    });
+    console.log(data)
+    if (data.folder.pages) {
+      console.log('pages!')
+      data.folder.pages.forEach(page => {
+        const pluginName = page.pluginName || "Other";
+        if (!pluginNames.includes(pluginName)) {
+          pluginNames.push(pluginName);
+          pluginMap[pluginName] = [];
+        }
+        pluginMap[pluginName].push(`${data.path}/${page.text}`);
+      });
+    }
+    if (data.folder.subFolders) {
+      data.folder.subFolders.forEach(folder => {
+        processJSON(folder);
+      });
+    }
   }
-  if (data.subFolders) {
-    data.subFolders.forEach(folder => {
-      processJSON(folder);
-    });
-  }
-}
 
   // Filter menu items
   $: filteredItems = selectedPlugin === 'All'
-    ? menuJSON.folder.subFolders
-    : menuJSON.folder.subFolders.map(folder => ({
+    ? menuJSON?.folder?.subFolders ?? []
+    : menuJSON?.folder?.subFolders.map(folder => ({
         ...folder,
         pages: folder.pages.filter(page => page.pluginName === selectedPlugin),
         subFolders: filterSubfolders(folder.subFolders)
-      }));
+      })) ?? [];
 
   // Recursive function to filter subfolders
   function filterSubfolders(subfolders) {
@@ -85,24 +87,7 @@
   </ul>
 {/each}
 
-<!-- Recursive Tree component -->
-<svelte:component this={Tree} let:folder>
-  <ul>
-    {#each folder.subFolders as subfolder}
-      <li>
-        <a>{subfolder.text}</a>
-        {#if subfolder.subFolders.length > 0}
-          <Tree {subfolder} />
-        {/if}
-        {#each subfolder.pages as page}
-          <li class:hidden={page.pluginName !== selectedPlugin}>
-            <a>{page.text}</a>
-          </li>
-        {/each}
-      </li>
-    {/each}
-  </ul>
-</svelte:component>
+{JSON.stringify(menuJSON,null, 2)}
 
 <style>
   .hidden {
