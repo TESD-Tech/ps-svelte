@@ -9,7 +9,10 @@ WITH date_list AS (
 			AND CALENDAR_DAY.MEMBERSHIPVALUE = 1
 			AND CALENDAR_DAY.INSESSION = 1
 	WHERE terms."NAME" LIKE '%-%'
-		AND terms.SCHOOLID = ~(curschoolid)
+		AND (
+					( terms.SCHOOLID = ~(curschoolid) AND ~(curschoolid) != 0 )
+					OR ( ~(curschoolid) = 0 AND terms.schoolid = 2080 )
+				)
 		AND terms.id LIKE '~(curyearid)%'
 	ORDER BY CALENDAR_DAY.DATE_VALUE
 )
